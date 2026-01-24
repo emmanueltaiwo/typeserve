@@ -1,0 +1,256 @@
+---
+title: Config Reference
+description: Complete TypeServe configuration API reference
+---
+
+# Configuration Reference
+
+Complete reference for all TypeServe configuration types and options.
+
+## TypeServeConfig
+
+Main configuration interface:
+
+```typescript
+interface TypeServeConfig {
+  routes: RouteConfig[];  // Required: Array of route configurations
+  port?: number;          // Optional: Server port (default: 7002)
+  basePath?: string;      // Optional: API base path (default: '/api')
+}
+```
+
+### Properties
+
+#### `routes` (required)
+
+Array of route configurations. Each route maps an HTTP endpoint to a TypeScript type.
+
+```typescript
+routes: [
+  {
+    path: '/users',
+    method: 'GET',
+    type: 'User[]',
+  },
+]
+```
+
+#### `port` (optional)
+
+The port number for the mock server. Defaults to `7002`.
+
+```typescript
+port: 7002
+```
+
+If the port is in use, TypeServe automatically tries the next available port.
+
+#### `basePath` (optional)
+
+The base path prefix for all routes. Defaults to `'/api'`.
+
+```typescript
+basePath: '/api'
+```
+
+All route paths will be prefixed with this value.
+
+## RouteConfig
+
+Route configuration interface:
+
+```typescript
+interface RouteConfig {
+  path: string;                    // Required: Endpoint path
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE'; // Required: HTTP method
+  type: string;                    // Required: TypeScript type name
+  file?: string;                   // Optional: Explicit file path
+  count?: 1 | 2 | 3 | 4 | 5;      // Optional: Array item count
+}
+```
+
+### Properties
+
+#### `path` (required)
+
+The endpoint path. Supports Express-style route parameters.
+
+```typescript
+path: '/users'              // Simple path
+path: '/users/:id'          // With parameter
+path: '/posts/:id/comments' // Nested path
+```
+
+#### `method` (required)
+
+HTTP method. Supports `'GET'`, `'POST'`, `'PUT'`, or `'DELETE'`.
+
+```typescript
+method: 'GET'    // GET request
+method: 'POST'   // POST request
+method: 'PUT'    // PUT request
+method: 'DELETE' // DELETE request
+```
+
+#### `type` (required)
+
+TypeScript type name. Use `[]` suffix for arrays.
+
+```typescript
+type: 'User'    // Single object
+type: 'User[]'  // Array of objects
+```
+
+#### `file` (optional)
+
+Explicit file path if TypeServe can't find the type automatically.
+
+```typescript
+file: './src/types/user.ts'
+```
+
+Use relative paths from your project root.
+
+#### `count` (optional)
+
+For array types, specify how many items to generate (1-5). Defaults to 1-3 random items.
+
+```typescript
+count: 1  // Always 1 item
+count: 5  // Always 5 items
+```
+
+## defineMock
+
+Type-safe helper function for defining your config:
+
+```typescript
+import { defineMock } from '@typeserve/core';
+
+export default defineMock({
+  // Full TypeScript IntelliSense and type checking
+  port: 7002,
+  basePath: '/api',
+  routes: [...],
+});
+```
+
+This function provides:
+- Full TypeScript autocomplete
+- Type checking for all properties
+- IntelliSense support in your IDE
+
+## Type Definitions
+
+### ParsedType
+
+Internal type representation (for reference):
+
+```typescript
+interface ParsedType {
+  name: string;
+  properties: Record<string, TypeProperty>;
+  isArray: boolean;
+  isEnum: boolean;
+  enumValues?: string[];
+}
+```
+
+### TypeProperty
+
+Property definition (for reference):
+
+```typescript
+interface TypeProperty {
+  type: string;
+  isOptional: boolean;
+  isArray: boolean;
+  isEnum: boolean;
+  enumValues?: string[];
+  nestedType?: ParsedType;
+}
+```
+
+## Complete Example
+
+```typescript
+import { defineMock } from '@typeserve/core';
+
+export default defineMock({
+  // Server configuration
+  port: 7002,
+  basePath: '/api',
+  
+  // Route definitions
+  routes: [
+    // Array route with count
+    {
+      path: '/users',
+      method: 'GET',
+      type: 'User[]',
+      count: 5,
+    },
+    // Single object route
+    {
+      path: '/users/:id',
+      method: 'GET',
+      type: 'User',
+    },
+    // Route with explicit file
+    {
+      path: '/posts',
+      method: 'GET',
+      type: 'Post[]',
+      file: './src/types/posts.ts',
+    },
+    // POST route
+    {
+      path: '/posts',
+      method: 'POST',
+      type: 'Post',
+    },
+    // PUT route
+    {
+      path: '/users/:id',
+      method: 'PUT',
+      type: 'User',
+    },
+    // DELETE route
+    {
+      path: '/users/:id',
+      method: 'DELETE',
+      type: 'User',
+    },
+  ],
+});
+```
+
+## Type Resolution
+
+TypeServe resolves types by:
+
+1. Searching all TypeScript files in your project
+2. Looking for exported types/interfaces matching the name
+3. Using the `file` property if specified
+
+Make sure your types are **exported**:
+
+```typescript
+// ✅ Good
+export interface User { ... }
+
+// ❌ Bad - not exported
+interface User { ... }
+```
+
+## Validation
+
+TypeServe validates your config on startup:
+
+- All required fields must be present
+- Route paths must be valid
+- HTTP methods must be 'GET', 'POST', 'PUT', or 'DELETE'
+- Type names must match exported types
+- Array counts must be 1-5
+
+If validation fails, you'll see an error message with details.

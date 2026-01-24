@@ -1,0 +1,47 @@
+{
+  "name": "typeserve",
+  "version": "1.0.0",
+  "description": "Generate live mock APIs from TypeScript types",
+  "bin": {
+    "typeserve": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "typescript",
+    "mock",
+    "api",
+    "mock-api",
+    "types",
+    "development",
+    "cli"
+  ],
+  "author": "Emmanuel Taiwo <devemmanuel1@gmail.com>",
+  "license": "AGPL-3.0",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emmanueltaiwo/typeserve.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@typeserve/core": "^1.0.0",
+    "commander": "^12.1.0",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "typescript": "^5.9.3"
+  }
+}

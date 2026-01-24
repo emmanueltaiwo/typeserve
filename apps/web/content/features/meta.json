@@ -1,0 +1,4 @@
+{
+  "title": "Features",
+  "pages": ["smart-generation", "nested-types", "hot-reload"]
+}

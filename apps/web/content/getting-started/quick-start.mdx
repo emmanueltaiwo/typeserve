@@ -1,0 +1,139 @@
+---
+title: Quick Start
+description: Create your first mock API in 3 simple steps
+---
+
+# Quick Start
+
+Get your first mock API running in under 2 minutes.
+
+## Step 1: Define Your Types
+
+Create your TypeScript types anywhere in your project:
+
+```typescript
+// src/types.ts
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  age: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface Post {
+  id: string;
+  user: User;
+  title: string;
+  description: string;
+  tags: string[];
+  publishedAt: string;
+  views: number;
+}
+```
+
+## Step 2: Create Configuration
+
+Initialize your config file using the init command:
+
+```bash
+npx typeserve init
+```
+
+This creates a `typeserve.config.ts` file with default settings. Then edit it to add your routes:
+
+Or create `typeserve.config.ts` manually in your project root:
+
+```typescript
+import { defineMock } from '@typeserve/core';
+
+export default defineMock({
+  port: 7002,
+  basePath: '/api',
+  routes: [
+    {
+      path: '/users',
+      method: 'GET',
+      type: 'User[]',
+      count: 5, // Generate 5 users (optional)
+    },
+    {
+      path: '/users/:id',
+      method: 'GET',
+      type: 'User',
+    },
+    {
+      path: '/posts',
+      method: 'GET',
+      type: 'Post[]',
+    },
+    {
+      path: '/posts',
+      method: 'POST',
+      type: 'Post',
+    },
+    {
+      path: '/users/:id',
+      method: 'PUT',
+      type: 'User',
+    },
+    {
+      path: '/users/:id',
+      method: 'DELETE',
+      type: 'User',
+    },
+  ],
+});
+```
+
+## Step 3: Start the Server
+
+Run the development server:
+
+```bash
+npx typeserve dev
+```
+
+You'll see output like:
+
+```
+📖 Loading configuration...
+✅ Configuration loaded successfully
+📖 Parsing types...
+   This may take a while depending on the number of types and project size.
+✅ Types parsed in 29181ms
+🚀 Attempting to start your server on port 7002...
+✅ TypeServe running on http://localhost:7002/api (started in 29903ms)
+📋 Available routes:
+   GET /api/users → User[]
+   GET /api/users/:id → User
+   GET /api/posts → Post[]
+   POST /api/posts → Post
+```
+
+TypeServe parses all your types at startup to ensure fast response times. The initial parsing may take a moment depending on your project size, but once complete, all API requests will be lightning fast.
+
+## Test Your API
+
+Open your browser or use curl:
+
+```bash
+curl http://localhost:7002/api/users
+```
+
+You'll get realistic mock data that matches your TypeScript types!
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "john.doe@example.com",
+    "name": "John Doe",
+    "age": 28,
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00.000Z"
+  }
+  // ... 4 more users
+]
+```

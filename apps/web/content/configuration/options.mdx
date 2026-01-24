@@ -1,0 +1,268 @@
+---
+title: Configuration Options
+description: Complete reference of all TypeServe configuration options
+---
+
+# Configuration Options
+
+Complete reference for all TypeServe configuration options.
+
+## TypeServeConfig
+
+```typescript
+interface TypeServeConfig {
+  routes: RouteConfig[];  // Required
+  port?: number;          // Optional, default: 7002
+  basePath?: string;      // Optional, default: '/api'
+}
+```
+
+## RouteConfig
+
+```typescript
+interface RouteConfig {
+  path: string;                    // Required: endpoint path
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE'; // Required: HTTP method
+  type: string;                    // Required: TypeScript type name
+  file?: string;                   // Optional: explicit file path
+  count?: 1 | 2 | 3 | 4 | 5;      // Optional: array item count
+}
+```
+
+## Port Configuration
+
+### Default Port
+
+```typescript
+export default defineMock({
+  port: 7002, // Server runs on port 7002
+  routes: [...],
+});
+```
+
+### Port Auto-Detection
+
+If the specified port is in use, TypeServe automatically tries the next available port:
+
+```
+🚀 Attempting to start your server on port 7002...
+⚠️  Port 7002 is already in use. Attempting to start on port 7003...
+✅ TypeServe running on http://localhost:7003/api
+   (Originally attempted port 7002)
+```
+
+### CLI Port Override
+
+You can override the port via CLI:
+
+```bash
+npx typeserve dev --port 4000
+```
+
+## Base Path
+
+### Default Base Path
+
+```typescript
+export default defineMock({
+  basePath: '/api', // All routes prefixed with /api
+  routes: [
+    { path: '/users', ... }, // Becomes /api/users
+  ],
+});
+```
+
+### Custom Base Path
+
+```typescript
+export default defineMock({
+  basePath: '/api/v1',
+  routes: [
+    { path: '/users', ... }, // Becomes /api/v1/users
+  ],
+});
+```
+
+### No Base Path
+
+```typescript
+export default defineMock({
+  basePath: '',
+  routes: [
+    { path: '/users', ... }, // Becomes /users
+  ],
+});
+```
+
+## Route Paths
+
+### Simple Paths
+
+```typescript
+{ path: '/users', ... }
+{ path: '/posts', ... }
+{ path: '/comments', ... }
+```
+
+### Path Parameters
+
+Express-style route parameters:
+
+```typescript
+{ path: '/users/:id', ... }              // /api/users/123
+{ path: '/posts/:postId/comments', ... } // /api/posts/123/comments
+{ path: '/users/:id/posts/:postId', ... } // /api/users/1/posts/2
+```
+
+Note: Path parameters are captured but not used in data generation. All generated data follows the same structure.
+
+## HTTP Methods
+
+### GET Requests
+
+```typescript
+{
+  path: '/users',
+  method: 'GET',
+  type: 'User[]',
+}
+```
+
+### POST Requests
+
+```typescript
+{
+  path: '/posts',
+  method: 'POST',
+  type: 'Post',
+}
+```
+
+### PUT Requests
+
+```typescript
+{
+  path: '/users/:id',
+  method: 'PUT',
+  type: 'User',
+}
+```
+
+### DELETE Requests
+
+```typescript
+{
+  path: '/users/:id',
+  method: 'DELETE',
+  type: 'User',
+}
+```
+
+## Type Names
+
+### Single Types
+
+```typescript
+{ type: 'User', ... }    // Returns a single User object
+{ type: 'Post', ... }    // Returns a single Post object
+```
+
+### Array Types
+
+Use `[]` suffix for arrays:
+
+```typescript
+{ type: 'User[]', ... }  // Returns an array of User objects
+{ type: 'Post[]', ... }  // Returns an array of Post objects
+```
+
+## Array Count
+
+Control how many items are generated for array types:
+
+```typescript
+{
+  path: '/users',
+  method: 'GET',
+  type: 'User[]',
+  count: 1, // Always 1 user
+}
+
+{
+  path: '/users',
+  method: 'GET',
+  type: 'User[]',
+  count: 5, // Always 5 users
+}
+```
+
+If `count` is not specified, TypeServe randomly generates 1-3 items.
+
+## File Path
+
+Specify the exact file path if TypeServe can't find your type:
+
+```typescript
+{
+  path: '/users',
+  method: 'GET',
+  type: 'User',
+  file: './src/models/user.ts',
+}
+```
+
+Use relative paths from your project root.
+
+## Complete Example
+
+```typescript
+import { defineMock } from '@typeserve/core';
+
+export default defineMock({
+  // Server configuration
+  port: 7002,
+  basePath: '/api',
+  
+  // Route definitions
+  routes: [
+    // Array route with count
+    {
+      path: '/users',
+      method: 'GET',
+      type: 'User[]',
+      count: 5,
+    },
+    // Single object route
+    {
+      path: '/users/:id',
+      method: 'GET',
+      type: 'User',
+    },
+    // Route with explicit file
+    {
+      path: '/posts',
+      method: 'GET',
+      type: 'Post[]',
+      file: './src/types/posts.ts',
+    },
+    // POST route
+    {
+      path: '/posts',
+      method: 'POST',
+      type: 'Post',
+    },
+    // PUT route
+    {
+      path: '/users/:id',
+      method: 'PUT',
+      type: 'User',
+    },
+    // DELETE route
+    {
+      path: '/users/:id',
+      method: 'DELETE',
+      type: 'User',
+    },
+  ],
+});
+```

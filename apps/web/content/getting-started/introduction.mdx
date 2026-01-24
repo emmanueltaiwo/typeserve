@@ -1,0 +1,58 @@
+---
+title: Introduction
+description: Generate live mock APIs from your TypeScript types. No backend needed.
+---
+
+# Introduction
+
+TypeServe is the **first and only** tool that generates live mock APIs directly from your TypeScript types. No schema files, no OpenAPI definitions, no manual configuration—just your existing TypeScript interfaces, types, and enums.
+
+## What is TypeServe?
+
+TypeServe automatically creates a fully-functional Express server that generates realistic mock data from your TypeScript types. It's perfect for frontend developers who want to build without waiting for backend endpoints.
+
+## Why TypeServe?
+
+### TypeScript-First Approach
+
+Unlike other mock API tools, TypeServe uses your **existing TypeScript types**. You don't need to:
+- Write OpenAPI schemas
+- Create JSON Schema files
+- Manually define mock data structures
+- Maintain separate type definitions
+
+Just use the types you already have in your codebase.
+
+### Lightning Fast
+
+TypeServe parses your types at startup, ensuring all routes are ready before the server starts accepting requests. This initial parsing may take a moment depending on the number of types and project size, but once complete, responses are delivered in **2ms-200ms**. Perfect for rapid development and testing.
+
+### Hot Reload
+
+The server automatically reloads when your types or configuration change. Just save your file and keep coding.
+
+### Smart Data Generation
+
+TypeServe intelligently detects common field patterns:
+- **Emails** → `user@example.com`
+- **IDs** → UUIDs
+- **Dates** → ISO date strings
+- **Names** → Full names
+- **URLs** → Valid URLs
+- **Addresses** → Street addresses
+
+## How It Works
+
+1. **Define your types** in TypeScript files
+2. **Create a config** that maps routes to your types
+3. **Start the server** with `npx typeserve dev`
+4. **Use your API** just like a real backend
+
+That's it! Your mock API is ready to use.
+
+## Use Cases
+
+- **Frontend Development** - Build your UI without waiting for backend endpoints
+- **API Design** - Prototype your API structure and share with your team
+- **Testing** - Generate consistent mock data for integration tests
+- **Demos & Prototypes** - Quickly spin up working APIs for presentations

@@ -1,50 +1,247 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ededed;
+
+  /* Fumadocs official CSS variables */
+  --fd-sidebar-width: 240px;
+  --fd-nav-height: 80px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-orbitron);
 }
 
 body {
+  background: #000000;
   color: var(--foreground);
-  background: var(--background);
+  font-family: var(--font-jetbrains-mono), 'Courier New', monospace;
+  overflow-x: hidden;
+  letter-spacing: 0.01em;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* Apply hacker font to headings */
+h1 {
+  font-family: var(--font-orbitron), var(--font-jetbrains-mono), monospace;
+  font-weight: 900;
+  letter-spacing: 0.01em;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-orbitron), var(--font-jetbrains-mono), monospace;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.imgDark {
-  display: none;
+/* Apply monospace to code and technical elements */
+code,
+pre,
+.font-mono {
+  font-family: var(--font-jetbrains-mono), 'Courier New', monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444444;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Code block styling */
+.code-block {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: var(--font-geist-mono), monospace;
+  overflow-x: auto;
+}
+
+/* Glow effect */
+.glow {
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Animated gradient background */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
   }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
 
-  .imgLight {
-    display: none;
+.animated-gradient {
+  background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+/* Blob animation */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
   }
-  .imgDark {
-    display: unset;
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
   }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Grid animation */
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+/* Enhanced Fumadocs sidebar styling */
+aside[data-sidebar],
+.fd-sidebar,
+[data-sidebar],
+nav[data-sidebar],
+aside {
+  background: #000000 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Sidebar width control */
+aside[data-sidebar],
+.fd-sidebar,
+[data-sidebar] {
+  width: var(--fd-sidebar-width) !important;
+  min-width: var(--fd-sidebar-width) !important;
+  max-width: var(--fd-sidebar-width) !important;
+}
+
+/* Sidebar links */
+aside[data-sidebar] a,
+.fd-sidebar a,
+[data-sidebar] a {
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.2s ease;
+}
+
+aside[data-sidebar] a:hover,
+.fd-sidebar a:hover,
+[data-sidebar] a:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Active sidebar item */
+aside[data-sidebar] a[data-active='true'],
+.fd-sidebar a[data-active='true'],
+[data-sidebar] a[data-active='true'],
+aside[data-sidebar] [data-active='true'],
+.fd-sidebar [data-active='true'],
+[data-sidebar] [data-active='true'] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  font-weight: 500;
+}
+
+/* Sidebar folders */
+aside[data-sidebar] [data-folder],
+.fd-sidebar [data-folder],
+[data-sidebar] [data-folder] {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+aside[data-sidebar] [data-folder] > button,
+.fd-sidebar [data-folder] > button,
+[data-sidebar] [data-folder] > button {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600;
+}
+
+aside[data-sidebar] [data-folder][data-active='true'] > button,
+.fd-sidebar [data-folder][data-active='true'] > button,
+[data-sidebar] [data-folder][data-active='true'] > button {
+  color: #ffffff !important;
+}
+
+/* Sidebar scrollbar */
+aside[data-sidebar]::-webkit-scrollbar,
+.fd-sidebar::-webkit-scrollbar,
+[data-sidebar]::-webkit-scrollbar {
+  width: 8px;
+}
+
+aside[data-sidebar]::-webkit-scrollbar-track,
+.fd-sidebar::-webkit-scrollbar-track,
+[data-sidebar]::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+aside[data-sidebar]::-webkit-scrollbar-thumb,
+.fd-sidebar::-webkit-scrollbar-thumb,
+[data-sidebar]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+aside[data-sidebar]::-webkit-scrollbar-thumb:hover,
+.fd-sidebar::-webkit-scrollbar-thumb:hover,
+[data-sidebar]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme-toggle],
+.theme-toggle {
+  display: none !important;
 }

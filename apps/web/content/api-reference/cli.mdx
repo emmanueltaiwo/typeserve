@@ -1,0 +1,180 @@
+---
+title: CLI Commands
+description: Complete reference for TypeServe CLI commands
+---
+
+# CLI Commands
+
+TypeServe provides a simple CLI to start and manage your mock API server.
+
+## Installation
+
+Install TypeServe as a dev dependency:
+
+```bash
+npm install -D typeserve
+```
+
+## Basic Usage
+
+Start the development server:
+
+```bash
+npx typeserve dev
+```
+
+This will:
+
+1. Load your `typeserve.config.ts` file
+2. Parse your TypeScript types
+3. Start the Express server
+4. Watch for file changes
+
+## Commands
+
+### `typeserve init`
+
+Initialize a new `typeserve.config.ts` file in your project root.
+
+```bash
+npx typeserve init
+```
+
+**What it does:**
+- Creates a `typeserve.config.ts` file with default configuration
+- If the file already exists, prompts you to confirm before overriding
+
+**Example:**
+
+```bash
+# Create new config file
+npx typeserve init
+
+# Output:
+# ✅ Created typeserve.config.ts successfully!
+# 📝 Edit the file to add your routes and types.
+```
+
+**If config exists:**
+
+```bash
+npx typeserve init
+# ⚠️  typeserve.config.ts already exists. Do you want to override? (y/n):
+# Type 'y' to override or 'n' to cancel
+```
+
+The generated config includes:
+- Default port: `7002`
+- Default basePath: `'/api'`
+- Empty routes array
+
+### `typeserve dev`
+
+Start the development server with hot reload.
+
+```bash
+npx typeserve dev
+```
+
+#### Options
+
+- `-p, --port <port>` - Port number (default: 7002)
+- `-c, --config <path>` - Config file path (default: `typeserve.config.ts`)
+
+#### Examples
+
+```bash
+# Start on default port 3000
+npx typeserve dev
+
+# Start on custom port
+npx typeserve dev --port 4000
+
+# Use custom config file
+npx typeserve dev --config ./my-config.ts
+```
+
+## Port Management
+
+If the specified port is already in use, TypeServe automatically tries the next available port:
+
+```
+🚀 Attempting to start your server on port 7002...
+⚠️  Port 7002 is already in use. Attempting to start on port 7003...
+✅ TypeServe running on http://localhost:7003/api
+   (Originally attempted port 7002)
+```
+
+## Hot Reload
+
+TypeServe automatically watches for changes:
+
+- When `typeserve.config.ts` changes → Server reloads
+- When any type used in config changes → Server reloads
+- When related type files change → Server reloads
+
+You'll see output like:
+
+```
+🔄 File changed: src/types.ts
+✅ Server reloaded
+```
+
+## Request Logging
+
+All requests are logged with timing information:
+
+```
+GET /api/users 200 78ms
+POST /api/posts 201 52ms
+GET /api/users/123 200 38ms
+```
+
+## Graceful Shutdown
+
+Press `Ctrl+C` to stop the server:
+
+```
+👋 Shutting down TypeServe...
+🛑 Stopping TypeServe server...
+✅ Server stopped successfully
+👋 Goodbye!
+```
+
+## Global Installation
+
+You can install TypeServe globally:
+
+```bash
+npm install -g typeserve
+```
+
+Then use it directly:
+
+```bash
+typeserve dev
+```
+
+However, we recommend using it as a local dev dependency with `npx` for version consistency.
+
+## Troubleshooting
+
+### Port Already in Use
+
+TypeServe will automatically try the next port. If you want to use a specific port, make sure it's available or use the `--port` option.
+
+### Type Not Found
+
+Make sure:
+
+- Your type is exported from the file
+- The type name matches exactly (case-sensitive)
+- The file is in a location TypeServe can find (or specify `file` in route config)
+
+### Config Not Loading
+
+- Ensure `typeserve.config.ts` is in your project root
+- Check that the config exports a default object
+- Verify all routes have required fields (`path`, `method`, `type`)
+
+## Next Steps

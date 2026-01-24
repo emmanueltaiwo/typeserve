@@ -1,135 +1,271 @@
-# Turborepo starter
+# TypeServe
 
-This Turborepo starter is maintained by the Turborepo core team.
+**Generate live mock APIs from your TypeScript types. No backend needed.**
 
-## Using this example
+TypeServe automatically creates a fully-functional Express server that generates realistic mock data from your TypeScript interfaces, types, and enums. Perfect for frontend developers who want to build without waiting for backend endpoints.
 
-Run the following command:
+## ✨ Features
 
-```sh
-npx create-turbo@latest
+- 🎯 **TypeScript-first** - Uses your existing types, no OpenAPI or JSON Schema needed
+- ⚡ **Lightning fast** - Parses types at startup for instant responses (2ms-200ms)
+- 🔥 **Hot reload** - Automatically reloads when your types or config change
+- 🎨 **Smart data generation** - Auto-detects emails, dates, IDs, and more
+- 🔗 **Nested types** - Supports complex nested structures (`Post.user: User`)
+- 📊 **Type-safe config** - Full TypeScript support with IntelliSense
+- 🎲 **Configurable arrays** - Control array length (1-5 items)
+- 📝 **Request logging** - See all requests with timing info
+- 🌐 **Full HTTP support** - GET, POST, PUT, DELETE methods
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+npm install -D typeserve
 ```
 
-## What's inside?
+### 1. Define Your Types
 
-This Turborepo includes the following packages/apps:
+Create your TypeScript types anywhere in your project:
 
-### Apps and Packages
+```typescript
+// src/types.ts
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  age: number;
+  isActive: boolean;
+  createdAt: string;
+}
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+export interface Post {
+  id: string;
+  user: User;
+  title: string;
+  description: string;
+  tags: string[];
+  publishedAt: string;
+  views: number;
+}
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 2. Create Config
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+You can either create the config file manually or use the `init` command:
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+**Option A: Use the init command (recommended)**
+
+```bash
+npx typeserve init
 ```
 
-### Develop
+This will create a `typeserve.config.ts` file with default settings.
 
-To develop all apps and packages, run the following command:
+**Option B: Create manually**
 
-```
-cd my-turborepo
+Create `typeserve.config.ts` in your project root:
 
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+```typescript
+import { defineMock } from '@typeserve/core';
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+export default defineMock({
+  port: 7002,
+  basePath: '/api',
+  routes: [
+    {
+      path: '/users',
+      method: 'GET',
+      type: 'User[]',
+      count: 5, // Generate 5 users (optional, defaults to 1-3)
+    },
+    {
+      path: '/users/:id',
+      method: 'GET',
+      type: 'User',
+    },
+    {
+      path: '/posts',
+      method: 'GET',
+      type: 'Post[]',
+    },
+    {
+      path: '/posts',
+      method: 'POST',
+      type: 'Post',
+    },
+    {
+      path: '/users/:id',
+      method: 'PUT',
+      type: 'User',
+    },
+    {
+      path: '/users/:id',
+      method: 'DELETE',
+      type: 'User',
+    },
+  ],
+});
 ```
 
-## Useful Links
+### 3. Start the Server
 
-Learn more about the power of Turborepo:
+```bash
+npx typeserve dev
+```
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+That's it! Your mock API is running at `http://localhost:7002/api`
+
+## 📖 Usage Examples
+
+### React with Fetch
+
+```typescript
+// components/UserList.tsx
+import { useEffect, useState } from 'react';
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  age: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export function UserList() {
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    fetch('http://localhost:7002/api/users')
+      .then(res => res.json())
+      .then(data => setUsers(data));
+  }, []);
+
+  return (
+    <div>
+      {users.map(user => (
+        <div key={user.id}>
+          <h3>{user.name}</h3>
+          <p>{user.email}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## 🎯 Use Cases
+
+### Frontend Development
+
+Build your UI without waiting for backend endpoints. TypeServe generates realistic data that matches your types exactly.
+
+### API Design
+
+Prototype your API structure using TypeScript types. Share the config with your backend team for implementation.
+
+### Testing
+
+Use TypeServe in your test environment to generate consistent mock data for integration tests.
+
+### Demos & Prototypes
+
+Quickly spin up a working API for demos, prototypes, or client presentations.
+
+## 📚 Configuration
+
+### Route Options
+
+```typescript
+{
+  path: string;           // Route path (supports Express params like :id)
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE'; // HTTP method
+  type: string;           // TypeScript type name (supports arrays with [])
+  file?: string;          // Optional: specific file path to type
+  count?: 1 | 2 | 3 | 4 | 5; // Optional: array length (1-5)
+}
+```
+
+### Config Options
+
+```typescript
+{
+  port?: number;      // Server port (default: 7002)
+  basePath?: string;  // API base path (default: '/api')
+  routes: RouteConfig[];
+}
+```
+
+## 🎨 Smart Field Detection
+
+TypeServe automatically detects common field patterns and generates appropriate data:
+
+- **Emails** - `email`, `userEmail` → `user@example.com`
+- **IDs** - `id`, `userId`, `authorId` → UUIDs
+- **Dates** - `createdAt`, `updatedAt`, `publishedAt` → ISO date strings
+- **Names** - `name`, `userName` → Full names
+- **URLs** - `url`, `imageUrl` → Valid URLs
+- **Addresses** - `address` → Street addresses
+
+## 🔥 Hot Reload
+
+TypeServe watches your TypeScript files and automatically reloads when:
+
+- Your `typeserve.config.ts` changes
+- Any type used in your config changes
+- Related type files are modified
+
+When a change is detected, TypeServe re-parses your types and restarts the server. You'll see:
+
+```
+🔄 File changed: src/types.ts
+📖 Parsing types and reloading server...
+✅ Server reloaded in 245ms
+```
+
+Just save your file and the server reloads automatically!
+
+## 🛠️ Development
+
+### Using Locally (Monorepo)
+
+If you're developing TypeServe itself:
+
+```bash
+# Install dependencies
+npm install
+
+# Build packages
+npm run build
+
+# Run CLI directly
+npm run typeserve:dev dev
+
+# Or use the built version
+npm run typeserve dev
+```
+
+### Project Structure
+
+```
+typeserve/
+├── packages/
+│   ├── core/          # Core library (parsing, generation, server)
+│   └── cli/           # CLI commands
+├── typeserve.config.ts
+└── src/
+    └── types.ts       # Your TypeScript types
+```
+
+## 📝 License
+
+AGPL-3.0
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+AGPL-3.0 © [Emmanuel Taiwo](https://github.com/emmanueltaiwo)

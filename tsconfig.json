@@ -1,0 +1,14 @@
+{
+  "extends": "./packages/typescript-config/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@typeserve/core": ["./packages/core/src/index.ts"],
+      "@typeserve/core/*": ["./packages/core/src/*"]
+    }
+  },
+  "include": ["typeserve.config.ts", "src/**/*"],
+  "exclude": ["node_modules", "dist", "**/dist", "**/node_modules"]
+}

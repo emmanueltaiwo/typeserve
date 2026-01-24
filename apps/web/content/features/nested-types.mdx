@@ -1,0 +1,241 @@
+---
+title: Nested Types
+description: TypeServe supports complex nested type structures
+---
+
+# Nested Types
+
+TypeServe fully supports nested TypeScript types, allowing you to create realistic, interconnected mock data.
+
+## Basic Nested Types
+
+When a type references another type, TypeServe automatically resolves and generates the nested structure:
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  user: User;  // Nested User type
+}
+```
+
+Generated data:
+
+```json
+{
+  "id": "123",
+  "title": "My First Post",
+  "user": {
+    "id": "456",
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}
+```
+
+## Array of Nested Types
+
+You can nest types in arrays:
+
+```typescript
+interface Comment {
+  id: string;
+  text: string;
+  author: User;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  comments: Comment[];  // Array of nested types
+}
+```
+
+Generated data:
+
+```json
+{
+  "id": "123",
+  "title": "My Post",
+  "comments": [
+    {
+      "id": "789",
+      "text": "Great post!",
+      "author": {
+        "id": "456",
+        "name": "John Doe",
+        "email": "john@example.com"
+      }
+    }
+  ]
+}
+```
+
+## Deep Nesting
+
+TypeServe handles deep nesting levels:
+
+```typescript
+interface Address {
+  street: string;
+  city: string;
+  country: string;
+}
+
+interface Company {
+  name: string;
+  address: Address;
+}
+
+interface User {
+  id: string;
+  name: string;
+  company: Company;  // Deeply nested
+}
+```
+
+Generated data:
+
+```json
+{
+  "id": "123",
+  "name": "John Doe",
+  "company": {
+    "name": "Acme Corp",
+    "address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "country": "USA"
+    }
+  }
+}
+```
+
+## Circular References
+
+TypeServe handles circular references intelligently:
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+  posts: Post[];  // User has posts
+}
+
+interface Post {
+  id: string;
+  title: string;
+  author: User;  // Post has author (circular)
+}
+```
+
+When generating data, TypeServe will create the structure but avoid infinite loops by generating new instances at each level.
+
+## Multiple Nested Types
+
+A single type can reference multiple other types:
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  author: User;        // Nested User
+  category: Category;  // Nested Category
+  tags: Tag[];         // Array of nested Tags
+}
+```
+
+## Best Practices
+
+### Organize Your Types
+
+Keep related types together:
+
+```typescript
+// types/user.ts
+export interface User {
+  id: string;
+  name: string;
+}
+
+// types/post.ts
+import { User } from './user';
+
+export interface Post {
+  id: string;
+  title: string;
+  author: User;
+}
+```
+
+### Use Descriptive Names
+
+Clear type names make nested structures easier to understand:
+
+```typescript
+interface BlogPost {
+  id: string;
+  title: string;
+  author: BlogAuthor;      // Clear relationship
+  comments: BlogComment[]; // Clear relationship
+}
+```
+
+## Examples
+
+### Social Media Post
+
+```typescript
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  profilePicture: string;
+}
+
+interface Like {
+  id: string;
+  user: User;
+  createdAt: string;
+}
+
+interface Comment {
+  id: string;
+  text: string;
+  author: User;
+  likes: Like[];
+  createdAt: string;
+}
+
+interface Post {
+  id: string;
+  content: string;
+  author: User;
+  likes: Like[];
+  comments: Comment[];
+  createdAt: string;
+}
+```
+
+This creates a realistic social media post structure with nested users, likes, and comments.

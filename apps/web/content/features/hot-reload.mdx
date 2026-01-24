@@ -1,0 +1,178 @@
+---
+title: Hot Reload
+description: TypeServe automatically reloads when your types or config change
+---
+
+# Hot Reload
+
+TypeServe watches your files and automatically reloads the server when changes are detected. No manual restarts needed!
+
+## What Triggers Reload
+
+TypeServe automatically reloads when:
+
+1. **Configuration changes** - When `typeserve.config.ts` is modified
+2. **Type changes** - When any TypeScript type used in your config changes
+3. **Related files** - When files that contain your types are modified
+
+## How It Works
+
+When you save a file, TypeServe detects the change and:
+
+1. Stops the current server
+2. Reloads the configuration
+3. Re-parses your types (this may take a moment depending on project size)
+4. Restarts the server with updated routes
+
+You'll see output like:
+
+```
+🔄 File changed: src/types.ts
+🔄 Reloading server...
+📖 Parsing types...
+✅ Types parsed in 37.5s
+🚀 Attempting to start your server on port 7002...
+✅ TypeServe running on http://localhost:7002/api (started in 37.5s)
+📋 Available routes:
+   GET /api/users → User[]
+✅ Server reloaded in 1m 12.3s
+```
+
+The parsing step ensures all type changes are properly reflected in the generated mock data.
+
+## Example Workflow
+
+### 1. Start the Server
+
+```bash
+npx typeserve dev
+```
+
+```
+📖 Loading configuration...
+✅ Configuration loaded successfully
+📖 Parsing types...
+   This may take a while depending on the number of types and project size (est 7.0s).
+✅ Types parsed in 1m 1.1s
+🚀 Attempting to start your server on port 7002...
+✅ TypeServe running on http://localhost:7002/api (started in 1m 1.5s)
+📋 Available routes:
+   GET /api/users → User
+```
+
+### 2. Modify a Type
+
+```typescript
+// src/types.ts
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  age: number; // ← Add this field
+  isActive: boolean; // ← Add this field
+}
+```
+
+### 3. Save the File
+
+TypeServe automatically detects the change:
+
+```
+🔄 File changed: src/types.ts
+🔄 Reloading server...
+📖 Parsing types...
+✅ Types parsed in 37.5s
+🚀 Attempting to start your server on port 7002...
+✅ TypeServe running on http://localhost:7002/api (started in 37.5s)
+📋 Available routes:
+   GET /api/users → User[]
+✅ Server reloaded in 1m 12.3s
+```
+
+### 4. Test the Updated API
+
+```bash
+curl http://localhost:7002/api/users
+```
+
+The response now includes the new fields:
+
+```json
+[
+  {
+    "id": "...",
+    "email": "...",
+    "name": "...",
+    "age": 28, // ← New field
+    "isActive": true // ← New field
+  }
+]
+```
+
+## Adding New Routes
+
+When you add a new route to your config:
+
+```typescript
+export default defineMock({
+  routes: [
+    { path: '/users', method: 'GET', type: 'User[]' },
+    { path: '/posts', method: 'GET', type: 'Post[]' }, // ← New route
+  ],
+});
+```
+
+The server reloads and the new route is immediately available:
+
+```
+🔄 File changed: src/typeserve.config.ts
+🔄 Reloading server...
+📖 Parsing types...
+✅ Types parsed in 37.5s
+🚀 Attempting to start your server on port 7002...
+✅ TypeServe running on http://localhost:7002/api (started in 37.5s)
+📋 Available routes:
+   GET /api/users → User[]
+✅ Server reloaded in 1m 12.3s
+   GET /api/posts → Post[]  ← New route
+```
+
+## File Watching
+
+TypeServe watches:
+
+- Your `typeserve.config.ts` file
+- All TypeScript files in your project
+- Files that contain types referenced in your config
+
+## Troubleshooting
+
+### Changes Not Detected
+
+If changes aren't being detected:
+
+1. **Check file saving** - Make sure you've saved the file
+2. **Check file location** - Ensure files are in watched directories
+3. **Restart manually** - Press `Ctrl+C` and restart if needed
+
+### Type Not Found After Change
+
+If you get a "Type not found" warning:
+
+1. **Check exports** - Ensure the type is exported
+2. **Check file path** - Verify the file is in the project
+3. **Check type name** - Ensure the name matches exactly (case-sensitive)
+
+## Best Practices
+
+### Save Frequently
+
+Save your files frequently to see changes immediately. TypeServe's hot reload makes it easy to iterate quickly.
+
+### Watch the Console
+
+Keep an eye on the console output to see when reloads happen and catch any errors early.
+
+### Test After Changes
+
+After making changes, test your API endpoints to ensure everything works as expected.

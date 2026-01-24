@@ -1,0 +1,46 @@
+{
+  "name": "@typeserve/core",
+  "version": "1.0.0",
+  "description": "Core library for TypeServe - TypeScript mock API generator",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "typescript",
+    "mock",
+    "api",
+    "types"
+  ],
+  "author": "Emmanuel Taiwo <devemmanuel1@gmail.com>",
+  "license": "AGPL-3.0",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emmanueltaiwo/typeserve.git",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "chokidar": "^5.0.0",
+    "express": "^5.2.1",
+    "ts-morph": "^27.0.2"
+  },
+  "devDependencies": {
+    "@types/chokidar": "^1.7.5",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.9",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,254 @@
+---
+title: Smart Data Generation
+description: TypeServe automatically detects field patterns and generates realistic data
+---
+
+# Smart Data Generation
+
+TypeServe intelligently analyzes your TypeScript types and generates realistic mock data based on field names and patterns. No manual configuration needed!
+
+## How It Works
+
+TypeServe uses pattern matching to detect common field types and generates appropriate data:
+
+## Detected Patterns
+
+### Email Fields
+
+Fields containing `email` generate valid email addresses:
+
+```typescript
+interface User {
+  email: string;        // → "john.doe@example.com"
+  userEmail: string;    // → "jane.smith@example.com"
+  contactEmail: string; // → "contact@example.com"
+}
+```
+
+### ID Fields
+
+Fields containing `id` generate UUIDs:
+
+```typescript
+interface User {
+  id: string;           // → "550e8400-e29b-41d4-a716-446655440000"
+  userId: string;       // → "123e4567-e89b-12d3-a456-426614174000"
+  authorId: string;     // → "987fcdeb-51a2-43f7-8b9c-123456789abc"
+}
+```
+
+### Date Fields
+
+Fields containing date-related keywords generate ISO date strings:
+
+```typescript
+interface Post {
+  createdAt: string;    // → "2024-01-15T10:30:00.000Z"
+  updatedAt: string;    // → "2024-01-16T14:22:00.000Z"
+  publishedAt: string;  // → "2024-01-17T09:15:00.000Z"
+  deletedAt: string;    // → "2024-01-18T16:45:00.000Z"
+}
+```
+
+### Name Fields
+
+Fields containing `name` or `Name` generate realistic names:
+
+```typescript
+interface User {
+  name: string;         // → "John Doe"
+  userName: string;     // → "Jane Smith"
+  fullName: string;     // → "Michael Johnson"
+  displayName: string;  // → "Sarah Williams"
+}
+```
+
+### URL Fields
+
+Fields containing `url` or `Url` generate valid URLs:
+
+```typescript
+interface Post {
+  url: string;          // → "https://example.com/posts/123"
+  imageUrl: string;     // → "https://example.com/images/photo.jpg"
+  avatarUrl: string;    // → "https://example.com/avatars/user.png"
+  thumbnailUrl: string; // → "https://example.com/thumbs/thumb.jpg"
+}
+```
+
+### Address Fields
+
+Fields containing `address` generate street addresses:
+
+```typescript
+interface User {
+  address: string;      // → "123 Main Street, New York, NY 10001"
+  homeAddress: string;  // → "456 Oak Avenue, Los Angeles, CA 90001"
+}
+```
+
+## Type-Based Generation
+
+### Strings
+
+String fields generate random text based on context:
+
+```typescript
+interface Post {
+  title: string;        // → "Lorem ipsum dolor sit amet"
+  description: string;  // → "Consectetur adipiscing elit"
+  content: string;      // → Longer text content
+}
+```
+
+### Numbers
+
+Number fields generate random numbers:
+
+```typescript
+interface Post {
+  views: number;        // → 1234
+  likes: number;        // → 56
+  age: number;          // → 28
+  score: number;        // → 7.5
+}
+```
+
+### Booleans
+
+Boolean fields generate `true` or `false` randomly:
+
+```typescript
+interface User {
+  isActive: boolean;    // → true or false
+  isVerified: boolean;  // → true or false
+  isPremium: boolean;   // → true or false
+}
+```
+
+### Arrays
+
+Array fields generate arrays of the specified type:
+
+```typescript
+interface Post {
+  tags: string[];       // → ["tag1", "tag2", "tag3"]
+  categories: string[]; // → ["tech", "programming"]
+}
+```
+
+### Enums
+
+Enum types generate values from the enum:
+
+```typescript
+enum Status {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+}
+
+interface User {
+  status: Status;       // → "active", "inactive", or "pending"
+}
+```
+
+## Examples
+
+### User Profile
+
+```typescript
+interface User {
+  id: string;              // UUID
+  email: string;           // Email address
+  name: string;            // Full name
+  age: number;             // Random number
+  isActive: boolean;       // Random boolean
+  createdAt: string;       // ISO date
+  avatarUrl: string;       // Valid URL
+  address: string;         // Street address
+}
+```
+
+Generated data:
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "john.doe@example.com",
+  "name": "John Doe",
+  "age": 28,
+  "isActive": true,
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "avatarUrl": "https://example.com/avatars/user.jpg",
+  "address": "123 Main Street, New York, NY 10001"
+}
+```
+
+### Blog Post
+
+```typescript
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;        // UUID
+  publishedAt: string;     // ISO date
+  views: number;
+  likes: number;
+  tags: string[];
+  imageUrl: string;        // Valid URL
+}
+```
+
+Generated data:
+
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "title": "Getting Started with TypeScript",
+  "content": "TypeScript is a powerful language...",
+  "authorId": "987fcdeb-51a2-43f7-8b9c-123456789abc",
+  "publishedAt": "2024-01-15T10:30:00.000Z",
+  "views": 1234,
+  "likes": 56,
+  "tags": ["typescript", "programming", "web"],
+  "imageUrl": "https://example.com/images/post.jpg"
+}
+```
+
+## Best Practices
+
+### Use Descriptive Field Names
+
+Clear field names help TypeServe generate better data:
+
+```typescript
+// ✅ Good - descriptive names
+interface User {
+  email: string;
+  fullName: string;
+  createdAt: string;
+}
+
+// ❌ Less clear
+interface User {
+  e: string;
+  n: string;
+  d: string;
+}
+```
+
+### Leverage Pattern Detection
+
+Use common patterns to get realistic data automatically:
+
+```typescript
+interface Order {
+  orderId: string;         // → UUID
+  customerEmail: string;   // → Email
+  orderDate: string;       // → ISO date
+  shippingAddress: string; // → Address
+  totalAmount: number;     // → Number
+}
+```

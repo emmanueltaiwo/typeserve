@@ -1,0 +1,120 @@
+---
+title: Config File
+description: Learn how to configure TypeServe
+---
+
+# Configuration File
+
+TypeServe uses a `typeserve.config.ts` file in your project root to define your mock API routes.
+
+## Basic Structure
+
+```typescript
+import { defineMock } from '@typeserve/core';
+
+export default defineMock({
+  port: 7002,
+  basePath: '/api',
+  routes: [
+    // Your routes here
+  ],
+});
+```
+
+## Configuration Options
+
+### `port` (optional)
+
+The port number for your mock server. Defaults to `7002`.
+
+```typescript
+export default defineMock({
+  port: 4000, // Server will run on port 4000
+  routes: [...],
+});
+```
+
+If the port is already in use, TypeServe will automatically try the next available port.
+
+### `basePath` (optional)
+
+The base path for all your API routes. Defaults to `'/api'`.
+
+```typescript
+export default defineMock({
+  basePath: '/api/v1', // All routes will be prefixed with /api/v1
+  routes: [
+    { path: '/users', ... }, // Becomes /api/v1/users
+  ],
+});
+```
+
+### `routes` (required)
+
+An array of route configurations. Each route maps an HTTP endpoint to a TypeScript type.
+
+```typescript
+routes: [
+  {
+    path: '/users',
+    method: 'GET',
+    type: 'User[]',
+  },
+]
+```
+
+Learn more about [route configuration](/docs/configuration/routes).
+
+## Type Safety
+
+The `defineMock` function provides full TypeScript IntelliSense and type checking:
+
+```typescript
+import { defineMock } from '@typeserve/core';
+
+export default defineMock({
+  // TypeScript will autocomplete and validate your config
+  port: 7002,
+  routes: [
+    {
+      path: '/users',
+      method: 'GET', // Autocomplete: 'GET' | 'POST' | 'PUT' | 'DELETE'
+      type: 'User[]',
+      count: 3, // Autocomplete: 1 | 2 | 3 | 4 | 5
+    },
+  ],
+});
+```
+
+## Creating the Config File
+
+### Using the Init Command
+
+The easiest way to create your config file is using the `init` command:
+
+```bash
+npx typeserve init
+```
+
+This will create a `typeserve.config.ts` file with default settings. If the file already exists, you'll be prompted to confirm before overriding.
+
+### Manual Creation
+
+You can also create the file manually. The config file must be named `typeserve.config.ts` and placed in your project root:
+
+```
+my-project/
+├── typeserve.config.ts  ← Here
+├── package.json
+├── src/
+│   └── types.ts
+└── ...
+```
+
+## Custom Config Path
+
+You can use a custom config file path with the CLI:
+
+```bash
+npx typeserve dev --config ./config/my-typeserve.ts
+```
