@@ -6,7 +6,6 @@ export default defineConfig({
   outDir: 'dist',
   clean: true,
   external: ['@typeserve/core'],
-  banner: { js: '#!/usr/bin/env node' },
   sourcemap: false,
   dts: true,
 });
