@@ -52,7 +52,7 @@ The generated config file includes:
 Start the development server with hot reload.
 
 ```bash
-typeserve dev
+npx typeserve dev
 ```
 
 #### Options
@@ -64,13 +64,13 @@ typeserve dev
 
 ```bash
 # Start on default port 7002
-typeserve dev
+npx typeserve dev
 
 # Start on custom port
-typeserve dev --port 4000
+npx typeserve dev --port 4000
 
 # Use custom config file
-typeserve dev --config ./my-config.ts
+npx typeserve dev --config ./my-config.ts
 ```
 
 ## Usage

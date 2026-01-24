@@ -1,11 +1,11 @@
 {
   "name": "typeserve",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate live mock APIs from TypeScript types",
   "bin": {
-    "typeserve": "./dist/index.js"
+    "typeserve": "./dist/cli/src/index.js"
   },
-  "main": "./dist/index.js",
+  "main": "./dist/cli/src/index.js",
   "files": [
     "dist",
     "README.md"
