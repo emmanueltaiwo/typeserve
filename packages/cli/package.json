@@ -1,6 +1,6 @@
 {
   "name": "typeserve",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "Generate live mock APIs from TypeScript types",
   "bin": {
     "typeserve": "./dist/index.js"
@@ -11,8 +11,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsc",
+    "dev": "tsc --watch",
     "check-types": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
@@ -42,7 +42,6 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.9",
-    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   }
 }
