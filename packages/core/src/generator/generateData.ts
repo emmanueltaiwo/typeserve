@@ -78,12 +78,18 @@ function generateValue(
   key?: string,
   parsedTypes?: Map<string, ParsedType>,
 ): any {
-  if (prop.nestedType) {
-    return generateObject(prop.nestedType, parsedTypes);
-  }
-
+  // Check if property itself is an enum
   if (prop.isEnum && prop.enumValues) {
     return faker.helpers.arrayElement(prop.enumValues);
+  }
+
+  // Check if nested type is an enum (e.g., when property references an enum type)
+  if (prop.nestedType?.isEnum && prop.nestedType?.enumValues) {
+    return faker.helpers.arrayElement(prop.nestedType.enumValues);
+  }
+
+  if (prop.nestedType) {
+    return generateObject(prop.nestedType, parsedTypes);
   }
 
   const type = prop.type.toLowerCase();

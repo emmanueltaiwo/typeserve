@@ -1,6 +1,6 @@
 {
   "name": "typeserve",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Generate live mock APIs from TypeScript types",
   "bin": {
     "typeserve": "./dist/index.js"
@@ -36,7 +36,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@typeserve/core": "^1.0.1",
+    "@typeserve/core": "^1.0.2",
     "commander": "^12.1.0",
     "tsx": "^4.21.0"
   },
