@@ -1,18 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Github, Star, Terminal } from 'lucide-react';
+import { Github, Star } from 'lucide-react';
 
 export function NavHeader() {
-  const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [githubStars, setGithubStars] = useState<number | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
     fetch('https://api.github.com/repos/emmanueltaiwo/typeserve')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
@@ -48,13 +46,13 @@ export function NavHeader() {
             href='/'
             className='flex items-center gap-2 hover:opacity-80 transition-opacity'
           >
-            <div className='flex items-center gap-2'>
+            <div className='hidden sm:flex items-center gap-2'>
               <div className='h-2 w-2 rounded-full bg-green-500' />
               <span className='text-neutral-500 dark:text-neutral-500'>
                 user@typeserve-live
               </span>
             </div>
-            <span className='text-neutral-400 dark:text-neutral-600 mx-2'>
+            <span className='hidden sm:block text-neutral-400 dark:text-neutral-600 mx-2'>
               :
             </span>
             <span className='text-blue-600 dark:text-blue-400'>~</span>

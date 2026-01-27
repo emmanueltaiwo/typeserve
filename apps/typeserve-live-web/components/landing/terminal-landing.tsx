@@ -429,7 +429,7 @@ export function TerminalLanding() {
             <div className='relative'>
               {/* Command prompt */}
               <div className='flex items-center gap-3 mb-4 pb-3 border-b border-neutral-200 dark:border-neutral-800'>
-                <div className='flex items-center gap-2 shrink-0'>
+                <div className='hidden sm:flex items-center gap-2 shrink-0'>
                   <div className='h-2 w-2 rounded-full bg-green-500' />
                   <span className='text-xs font-mono text-neutral-500 dark:text-neutral-500'>
                     user@typeserve-live
