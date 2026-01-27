@@ -23,6 +23,7 @@ RUN npm run build
 # Build API
 WORKDIR /app/apps/typeserve-live-api
 RUN npm run build
+RUN ls -la dist/ && test -f dist/index.js || (echo "Build failed - dist/index.js not found" && exit 1)
 
 # Production stage
 FROM node:18-alpine
@@ -41,6 +42,9 @@ RUN npm ci --production
 COPY --from=builder /app/packages/core/dist ./packages/core/dist
 COPY --from=builder /app/packages/core/package.json ./packages/core/
 COPY --from=builder /app/apps/typeserve-live-api/dist ./apps/typeserve-live-api/dist
+
+# Verify dist folder exists
+RUN ls -la /app/apps/typeserve-live-api/dist/ || (echo "dist folder missing in production stage" && exit 1)
 
 WORKDIR /app/apps/typeserve-live-api
 
