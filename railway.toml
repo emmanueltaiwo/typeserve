@@ -1,0 +1,3 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/typeserve-live-api/Dockerfile"
