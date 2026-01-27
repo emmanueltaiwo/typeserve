@@ -12,6 +12,39 @@ const parsedTypesCache = new Map<string, Map<string, ParsedType>>();
 const MAX_CACHE_SIZE = 100;
 
 /**
+ * Convert Express-style path pattern to regex (e.g. /route/:id matches /route/123)
+ */
+function pathPatternToRegex(pathPattern: string): RegExp {
+  const segments = pathPattern.split('/').filter((s) => s.length > 0);
+  const regexParts = segments.map((seg) => {
+    if (seg.startsWith(':')) {
+      return '[^/]+'; // param: one or more non-slash chars
+    }
+    return seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  });
+  const pattern = '^/' + regexParts.join('/') + '$';
+  return new RegExp(pattern);
+}
+
+/**
+ * Normalize path for matching (strip trailing slash, keep "/" as-is)
+ */
+function normalizePath(path: string): string {
+  const trimmed = path.replace(/\/$/, '');
+  return trimmed === '' ? '/' : trimmed;
+}
+
+/**
+ * Check if request path matches a route pattern (supports /path/:id etc)
+ */
+function pathMatches(pattern: string, path: string): boolean {
+  const normalized = normalizePath(path);
+  if (pattern === normalized) return true;
+  const re = pathPatternToRegex(pattern);
+  return re.test(normalized);
+}
+
+/**
  * Clean up oldest cache entries if cache exceeds limit
  */
 function cleanupOldCacheEntries(): void {
@@ -77,10 +110,16 @@ export function createSubdomainHandler(serverService: ServerService) {
         });
       }
 
-      // Find matching route
-      const route = serverData.routes.find(
-        (r) => r.path === req.path && r.method === req.method
-      );
+      // Normalize path so /route/123/ matches /route/:id
+      const requestPath = normalizePath(req.path);
+      // Find matching route (exact path first, then param paths e.g. /route/:id)
+      const route =
+        serverData.routes.find(
+          (r) => r.path === requestPath && r.method === req.method
+        ) ??
+        serverData.routes.find(
+          (r) => pathMatches(r.path, requestPath) && r.method === req.method
+        );
 
       if (!route) {
         return res.status(404).json({

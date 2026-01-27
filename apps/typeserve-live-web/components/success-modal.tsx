@@ -58,12 +58,17 @@ export function SuccessModal({
 
   const apiUrl = `https://${subdomain}`;
 
+  /** For paths with :param, return example URL with param replaced (e.g. /route/:id → /route/1) */
+  const pathToExampleUrl = (path: string) =>
+    path.includes(':') ? path.replace(/:[^/]+/g, '1') : path;
+
   const firstRoute: CreateRouteRequest =
     routes.length > 0 && routes[0]
       ? routes[0]
       : { method: 'GET', path: '/users', responseType: 'User[]' };
-  const exampleCurl = `curl ${apiUrl}${firstRoute.path}`;
-  const exampleFetch = `fetch('${apiUrl}${firstRoute.path}')`;
+  const examplePath = pathToExampleUrl(firstRoute.path);
+  const exampleCurl = `curl ${apiUrl}${examplePath}`;
+  const exampleFetch = `fetch('${apiUrl}${examplePath}')`;
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -215,7 +220,7 @@ export function SuccessModal({
                   <button
                     onClick={() =>
                       copyToClipboard(
-                        `curl ${apiUrl}${route.path}`,
+                        `curl ${apiUrl}${pathToExampleUrl(route.path)}`,
                         `${route.method} ${route.path}`
                       )
                     }
