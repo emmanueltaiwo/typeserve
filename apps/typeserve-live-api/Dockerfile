@@ -23,7 +23,7 @@ RUN npm run build
 # Build API
 WORKDIR /app/apps/typeserve-live-api
 RUN npm run build
-RUN ls -la dist/ && test -f dist/index.js || (echo "Build failed - dist/index.js not found" && exit 1)
+RUN ls -la dist/ && find dist -name "index.js" || (echo "Build failed - dist/index.js not found" && exit 1)
 
 # Production stage
 FROM node:18-alpine

@@ -16,6 +16,7 @@
     "strict": true,
     "target": "ES2022",
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
       "@typeserve/core": ["../../packages/core/src/index.ts"]
