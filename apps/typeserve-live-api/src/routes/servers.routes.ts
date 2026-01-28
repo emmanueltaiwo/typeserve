@@ -1,15 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { ServerService } from '../services/server.service';
-import { ValidationService } from '../services/validation.service';
-import { rateLimiters } from '../services/rate-limit.service';
-import { RESERVED_SUBDOMAIN_NAMES } from '../constants';
+import { ServerService } from '../services/server.service.js';
+import { ValidationService } from '../services/validation.service.js';
+import { rateLimiters } from '../services/rate-limit.service.js';
+import { RESERVED_SUBDOMAIN_NAMES } from '../constants.js';
 import {
   CreateServerRequest,
   ValidationErrorResponse,
   ServerData,
   CapacityErrorResponse,
   DuplicateSubdomainErrorResponse,
-} from '../types';
+} from '../types.js';
 
 function isCapacityError(
   result: ServerData | CapacityErrorResponse

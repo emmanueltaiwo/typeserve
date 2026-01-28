@@ -7,7 +7,7 @@ import {
   EnumDeclaration,
 } from 'ts-morph';
 import { join, resolve } from 'path';
-import { ParsedType, TypeProperty, TypeServeConfig } from '../types';
+import { ParsedType, TypeProperty, TypeServeConfig } from '../types.js';
 
 let project: Project | null = null;
 const parsedTypeCache = new Map<string, ParsedType>();
@@ -32,7 +32,7 @@ export function resetParser(): void {
 function getCacheKey(
   projectRoot: string,
   typeName: string,
-  filePath?: string,
+  filePath?: string
 ): string {
   return `${projectRoot}:${filePath || 'all'}:${typeName}`;
 }
@@ -58,7 +58,7 @@ function getSourceFiles(projectRoot: string, filePath?: string): SourceFile[] {
 
 export function getTypeFilePaths(
   projectRoot: string,
-  config: TypeServeConfig,
+  config: TypeServeConfig
 ): Set<string> {
   const filePaths = new Set<string>();
 
@@ -90,7 +90,7 @@ export function getTypeFilePaths(
 export function parseTypes(
   projectRoot: string,
   typeName: string,
-  filePath?: string,
+  filePath?: string
 ): ParsedType {
   const cacheKey = getCacheKey(projectRoot, typeName, filePath);
   const cached = parsedTypeCache.get(cacheKey);
@@ -130,7 +130,7 @@ export function parseTypes(
 
   if (!foundType) {
     throw new Error(
-      `Type "${actualTypeName}" not found${filePath ? ` in ${filePath}` : ''}`,
+      `Type "${actualTypeName}" not found${filePath ? ` in ${filePath}` : ''}`
     );
   }
 
@@ -170,7 +170,7 @@ function parseTypeNode(
   type: Type,
   name: string,
   projectRoot?: string,
-  visited: Set<string> = new Set(),
+  visited: Set<string> = new Set()
 ): ParsedType {
   const isArray = type.isArray();
   const arrayElementType = isArray ? type.getArrayElementType() : null;

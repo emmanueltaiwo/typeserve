@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { ServerService } from '../services/server.service';
+import { ServerService } from '../services/server.service.js';
 import { parseTypes, generateData, ParsedType } from '@typeserve/core';
 import { RouteConfig } from '@typeserve/core';
 import { tmpdir } from 'os';
 import { writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
-import { checkSubdomainRateLimit } from '../services/rate-limit.service';
+import { checkSubdomainRateLimit } from '../services/rate-limit.service.js';
 
 const parsedTypesCache = new Map<string, Map<string, ParsedType>>();
 const MAX_CACHE_SIZE = 100;

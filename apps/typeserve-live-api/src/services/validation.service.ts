@@ -1,5 +1,5 @@
 import { Project } from 'ts-morph';
-import { CreateServerRequest, CreateRouteRequest } from '../types';
+import { CreateServerRequest, CreateRouteRequest } from '../types.js';
 import { tmpdir } from 'os';
 import { writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';

@@ -1,17 +1,17 @@
-import { RedisService } from './redis.service';
-import { BullMQService } from './bullmq.service';
+import { RedisService } from './redis.service.js';
+import { BullMQService } from './bullmq.service.js';
 import {
   CreateServerRequest,
   ServerData,
   ActiveServer,
   CapacityErrorResponse,
-} from '../types';
+} from '../types.js';
 import { RouteConfig } from '@typeserve/core';
 import {
   MAX_ACTIVE_SERVERS,
   MIN_EXPIRATION_SECONDS,
   MAX_EXPIRATION_SECONDS,
-} from '../constants';
+} from '../constants.js';
 
 export class ServerService {
   constructor(

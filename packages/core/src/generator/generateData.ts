@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker';
-import { ParsedType, TypeProperty } from '../types';
+import { ParsedType, TypeProperty } from '../types.js';
 
 export function generateData(
   parsedType: ParsedType,
   arrayCount?: number,
-  parsedTypes?: Map<string, ParsedType>,
+  parsedTypes?: Map<string, ParsedType>
 ): any {
   if (parsedType.isEnum && parsedType.enumValues) {
     const value = faker.helpers.arrayElement(parsedType.enumValues);
@@ -17,7 +17,7 @@ export function generateData(
         ? Math.min(Math.max(1, arrayCount), 5)
         : faker.number.int({ min: 1, max: 3 });
     return Array.from({ length: count }, () =>
-      generateObject(parsedType, parsedTypes),
+      generateObject(parsedType, parsedTypes)
     );
   }
 
@@ -51,7 +51,7 @@ function isDateField(key: string): boolean {
 
 function generateObject(
   parsedType: ParsedType,
-  parsedTypes?: Map<string, ParsedType>,
+  parsedTypes?: Map<string, ParsedType>
 ): any {
   const result: any = {};
 
@@ -63,7 +63,7 @@ function generateObject(
     if (prop.isArray) {
       result[key] = Array.from(
         { length: faker.number.int({ min: 1, max: 3 }) },
-        () => generateValue(prop, key, parsedTypes),
+        () => generateValue(prop, key, parsedTypes)
       );
     } else {
       result[key] = generateValue(prop, key, parsedTypes);
@@ -76,7 +76,7 @@ function generateObject(
 function generateValue(
   prop: TypeProperty,
   key?: string,
-  parsedTypes?: Map<string, ParsedType>,
+  parsedTypes?: Map<string, ParsedType>
 ): any {
   // Check if property itself is an enum
   if (prop.isEnum && prop.enumValues) {

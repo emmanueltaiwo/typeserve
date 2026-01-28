@@ -1,8 +1,8 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
-import { ServerService } from './services/server.service';
-import { RedisService } from './services/redis.service';
-import { createServersRouter } from './routes/servers.routes';
-import { createSubdomainHandler } from './handlers/subdomain.handler';
+import { ServerService } from './services/server.service.js';
+import { RedisService } from './services/redis.service.js';
+import { createServersRouter } from './routes/servers.routes.js';
+import { createSubdomainHandler } from './handlers/subdomain.handler.js';
 
 export function createApp(
   serverService: ServerService,

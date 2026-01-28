@@ -1,9 +1,9 @@
 import express, { Express, Request, Response } from 'express';
-import { TypeServeConfig, RouteConfig } from '../types';
-import { parseTypes } from '../parser/parseTypes';
-import { generateData } from '../generator/generateData';
+import { TypeServeConfig, RouteConfig } from '../types.js';
+import { parseTypes } from '../parser/parseTypes.js';
+import { generateData } from '../generator/generateData.js';
 import { createServer, Server } from 'http';
-import { logger, formatDuration } from '../utils/logger';
+import { logger, formatDuration } from '../utils/logger.js';
 
 let app: Express | null = null;
 let server: Server | null = null;
@@ -29,10 +29,10 @@ function detectAndFilterDuplicates(routes: RouteConfig[]): RouteConfig[] {
       const key = `${route.method}:${route.path}`;
       const first = seen.get(key)!;
       logger.warning(
-        `   Duplicate at index ${index + 1}: ${route.method} ${route.path} → ${route.type}`,
+        `   Duplicate at index ${index + 1}: ${route.method} ${route.path} → ${route.type}`
       );
       logger.dim(
-        `   First occurrence at index ${first.firstIndex + 1} (will be used): ${first.route.method} ${first.route.path} → ${first.route.type}`,
+        `   First occurrence at index ${first.firstIndex + 1} (will be used): ${first.route.method} ${first.route.path} → ${first.route.type}`
       );
     });
     logger.dim('   Only the first occurrence of each route will be used.\n');
@@ -60,7 +60,7 @@ const failedRoutes = new Set<string>();
 function preParseTypes(
   routes: RouteConfig[],
   projectRoot: string,
-  isReload: boolean = false,
+  isReload: boolean = false
 ): void {
   const parseStartTime = Date.now();
   if (!isReload) {
@@ -69,7 +69,7 @@ function preParseTypes(
     const estimatedMs = routeCount * 2000 + 5000;
     const estimatedTime = formatDuration(estimatedMs);
     logger.dim(
-      `   This may take a while depending on the number of types and project size (est ${estimatedTime}).`,
+      `   This may take a while depending on the number of types and project size (est ${estimatedTime}).`
     );
   } else {
     logger.info('📖 Parsing types...');
@@ -87,7 +87,7 @@ function preParseTypes(
       const routeKey = `${route.method}:${route.path}`;
       failedRoutes.add(routeKey);
       logger.warning(
-        `⚠️  Warning: Failed to parse type "${route.type}" for route ${route.path}: ${error instanceof Error ? error.message : String(error)}`,
+        `⚠️  Warning: Failed to parse type "${route.type}" for route ${route.path}: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
@@ -99,7 +99,7 @@ function preParseTypes(
 export function startServer(
   config: TypeServeConfig,
   projectRoot: string,
-  isReload: boolean = false,
+  isReload: boolean = false
 ): void {
   const serverStartTime = Date.now();
 
@@ -155,7 +155,13 @@ export function startServer(
   }
 
   const desiredPort = config.port || 7002;
-  tryStartServer(desiredPort, basePath, filteredRoutes, serverStartTime, undefined);
+  tryStartServer(
+    desiredPort,
+    basePath,
+    filteredRoutes,
+    serverStartTime,
+    undefined
+  );
 }
 
 function tryStartServer(
@@ -163,14 +169,14 @@ function tryStartServer(
   basePath: string,
   routes: RouteConfig[],
   startTime: number | null,
-  originalPort?: number,
+  originalPort?: number
 ): void {
   const targetPort = port;
   const isRetry = originalPort !== undefined;
 
   if (isRetry) {
     logger.warning(
-      `⚠️  Port ${originalPort} is already in use. Attempting to start on port ${targetPort}...`,
+      `⚠️  Port ${originalPort} is already in use. Attempting to start on port ${targetPort}...`
     );
   } else {
     logger.info(`🚀 Attempting to start your server on port ${targetPort}...`);
@@ -187,7 +193,7 @@ function tryStartServer(
       const nextPort = targetPort + 1;
       if (nextPort > 65535) {
         console.error(
-          '❌ No available ports found. Please free up a port and try again.',
+          '❌ No available ports found. Please free up a port and try again.'
         );
         return;
       }
@@ -197,7 +203,7 @@ function tryStartServer(
         basePath,
         routes,
         startTime,
-        originalPort || targetPort,
+        originalPort || targetPort
       );
     } else {
       console.error('❌ Server error:', error.message);
@@ -210,7 +216,7 @@ function tryStartServer(
 
     const duration = startTime ? Date.now() - startTime : 0;
     logger.success(
-      `✅ TypeServe running on http://localhost:${finalPort}${basePath} (started in ${formatDuration(duration)})`,
+      `✅ TypeServe running on http://localhost:${finalPort}${basePath} (started in ${formatDuration(duration)})`
     );
     if (isRetry) {
       logger.dim(`   (Originally attempted port ${originalPort})`);

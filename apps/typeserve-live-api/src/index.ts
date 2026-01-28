@@ -1,10 +1,10 @@
 import 'dotenv/config';
 
-import { createApp } from './app';
-import { RedisService } from './services/redis.service';
-import { BullMQService } from './services/bullmq.service';
-import { ServerService } from './services/server.service';
-import { CleanupService } from './services/cleanup.service';
+import { createApp } from './app.js';
+import { RedisService } from './services/redis.service.js';
+import { BullMQService } from './services/bullmq.service.js';
+import { ServerService } from './services/server.service.js';
+import { CleanupService } from './services/cleanup.service.js';
 
 async function main() {
   const port = parseInt(process.env.PORT || '7005', 10);

@@ -1,5 +1,5 @@
-import { RedisService } from './redis.service';
-import { cleanupServerCache } from '../handlers/subdomain.handler';
+import { RedisService } from './redis.service.js';
+import { cleanupServerCache } from '../handlers/subdomain.handler.js';
 
 export class CleanupService {
   private intervalId: NodeJS.Timeout | null = null;

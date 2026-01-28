@@ -1,6 +1,6 @@
 import { createClient, RedisClientType } from 'redis';
-import { ServerData } from '../types';
-import { REDIS_KEYS } from '../constants';
+import { ServerData } from '../types.js';
+import { REDIS_KEYS } from '../constants.js';
 
 export class RedisService {
   private client: RedisClientType;

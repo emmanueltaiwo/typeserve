@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "description": "Backend API for Typeserve Live - temporary mock API platform",
   "dependencies": {
     "@typeserve/core": "*",

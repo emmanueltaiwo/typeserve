@@ -1,17 +1,17 @@
 import chokidar from 'chokidar';
 import type { FSWatcher } from 'chokidar';
-import { TypeServeConfig } from '../types';
-import { loadConfig } from '../config/loadConfig';
-import { resetParser, getTypeFilePaths } from '../parser/parseTypes';
-import { logger, formatDuration } from '../utils/logger';
-import { getCurrentPort } from '../server/startServer';
+import { TypeServeConfig } from '../types.js';
+import { loadConfig } from '../config/loadConfig.js';
+import { resetParser, getTypeFilePaths } from '../parser/parseTypes.js';
+import { logger, formatDuration } from '../utils/logger.js';
+import { getCurrentPort } from '../server/startServer.js';
 
 let currentWatcher: FSWatcher | null = null;
 
-export function watchFiles(
+export async function watchFiles(
   projectRoot: string,
-  onConfigChange: (config: TypeServeConfig) => Promise<void>,
-): void {
+  onConfigChange: (config: TypeServeConfig) => Promise<void>
+): Promise<void> {
   if (currentWatcher) {
     currentWatcher.close();
   }
@@ -20,7 +20,7 @@ export function watchFiles(
 
   let config: TypeServeConfig;
   try {
-    config = loadConfig(projectRoot);
+    config = await loadConfig(projectRoot);
   } catch {
     config = { routes: [] };
   }
@@ -51,7 +51,7 @@ export function watchFiles(
     debounceTimer = setTimeout(async () => {
       const reloadStartTime = Date.now();
       try {
-        const newConfig = loadConfig(projectRoot);
+        const newConfig = await loadConfig(projectRoot);
         const oldPort = getCurrentPort();
         const newPort = newConfig.port || 7002;
 
@@ -70,14 +70,14 @@ export function watchFiles(
           newTypeFilePaths = getTypeFilePaths(projectRoot, newConfig);
         } catch (error) {
           logger.warning(
-            `⚠️  Warning: Failed to get type file paths: ${error instanceof Error ? error.message : String(error)}`,
+            `⚠️  Warning: Failed to get type file paths: ${error instanceof Error ? error.message : String(error)}`
           );
           newTypeFilePaths = new Set();
         }
 
         const pathsChanged = !arraysEqual(
           Array.from(typeFilePaths),
-          Array.from(newTypeFilePaths),
+          Array.from(newTypeFilePaths)
         );
         if (pathsChanged) {
           watchFiles(projectRoot, onConfigChange);
@@ -86,12 +86,12 @@ export function watchFiles(
         await onConfigChange(newConfig);
         const reloadDuration = Date.now() - reloadStartTime;
         logger.success(
-          `✅ Server reloaded in ${formatDuration(reloadDuration)}\n`,
+          `✅ Server reloaded in ${formatDuration(reloadDuration)}\n`
         );
       } catch (error) {
         const reloadDuration = Date.now() - reloadStartTime;
         logger.error(
-          `❌ Failed to reload after ${formatDuration(reloadDuration)}: ${error instanceof Error ? error.message : String(error)}`,
+          `❌ Failed to reload after ${formatDuration(reloadDuration)}: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }, 300);
@@ -99,7 +99,7 @@ export function watchFiles(
 
   currentWatcher.on('error', (error: unknown) => {
     logger.error(
-      `Watcher error: ${error instanceof Error ? error.message : String(error)}`,
+      `Watcher error: ${error instanceof Error ? error.message : String(error)}`
     );
   });
 }

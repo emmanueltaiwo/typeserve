@@ -1,26 +1,28 @@
 import { existsSync } from 'fs';
 import { resolve } from 'path';
-import { TypeServeConfig } from '../types';
+import { pathToFileURL } from 'url';
+import { TypeServeConfig } from '../types.js';
 
 let tsxRegistered = false;
 
-function registerTsxIfNeeded(): void {
+async function registerTsxIfNeeded(): Promise<void> {
   if (tsxRegistered) return;
   try {
-    const tsx = require('tsx');
+    // @ts-expect-error - tsx doesn't have type definitions
+    const tsx = await import('tsx');
     if (tsx.register) {
       tsx.register();
       tsxRegistered = true;
     }
   } catch {
-    // tsx not available, will try direct require
+    // tsx not available, will try direct import
   }
 }
 
-export function loadConfig(
-  projectRoot: string = process.cwd(),
-): TypeServeConfig {
-  registerTsxIfNeeded();
+export async function loadConfig(
+  projectRoot: string = process.cwd()
+): Promise<TypeServeConfig> {
+  await registerTsxIfNeeded();
 
   const configPath = resolve(projectRoot, 'typeserve.config.ts');
 
@@ -28,14 +30,10 @@ export function loadConfig(
     throw new Error(`Config file not found: ${configPath}`);
   }
 
-  try {
-    const resolvedPath = require.resolve(configPath);
-    delete require.cache[resolvedPath];
-  } catch {
-    // If require.resolve fails, tsx will handle it
-  }
-
-  const configModule = require(configPath);
+  // Use dynamic import for ESM
+  // Convert path to file URL and add timestamp query to bust cache for hot reload
+  const configUrl = pathToFileURL(configPath).href;
+  const configModule = await import(configUrl + '?t=' + Date.now());
   const config = configModule.default || configModule;
 
   if (!config || !config.routes || !Array.isArray(config.routes)) {

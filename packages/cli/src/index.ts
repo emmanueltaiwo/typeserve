@@ -57,8 +57,8 @@ program
       const answer = await promptUser(
         colorize(
           '⚠️  typeserve.config.ts already exists. Do you want to override? (y/n): ',
-          colors.yellow,
-        ),
+          colors.yellow
+        )
       );
 
       if (answer !== 'y' && answer !== 'yes') {
@@ -79,23 +79,17 @@ export default defineMock({
     try {
       writeFileSync(configPath, configTemplate, 'utf-8');
       console.log(
-        colorize(
-          '✅ Created typeserve.config.ts successfully!',
-          colors.green,
-        ),
+        colorize('✅ Created typeserve.config.ts successfully!', colors.green)
       );
       console.log(
-        colorize(
-          '📝 Edit the file to add your routes and types.',
-          colors.cyan,
-        ),
+        colorize('📝 Edit the file to add your routes and types.', colors.cyan)
       );
     } catch (error) {
       console.error(
         colorize(
           `❌ Failed to create config file: ${error instanceof Error ? error.message : String(error)}`,
-          colors.red,
-        ),
+          colors.red
+        )
       );
       process.exit(1);
     }
@@ -106,23 +100,23 @@ program
   .description('Start the development server with hot reload')
   .option('-p, --port <port>', 'Port number', '7002')
   .option('-c, --config <path>', 'Config file path', 'typeserve.config.ts')
-  .action((options) => {
+  .action(async (options) => {
     const projectRoot = process.cwd();
     const port = parseInt(options.port, 10);
 
     try {
       console.log(colorize('📖 Loading configuration...', colors.cyan));
-      let config = loadConfig(projectRoot);
+      let config = await loadConfig(projectRoot);
       if (port !== 7002) {
         config = { ...config, port };
       }
 
       console.log(
-        colorize('✅ Configuration loaded successfully', colors.green),
+        colorize('✅ Configuration loaded successfully', colors.green)
       );
       startServer(config, projectRoot);
 
-      watchFiles(projectRoot, async (newConfig) => {
+      await watchFiles(projectRoot, async (newConfig) => {
         const oldPort = getCurrentPort();
         const newPort = newConfig.port || 7002;
 
@@ -130,16 +124,16 @@ program
           console.log(
             colorize(
               `\n⚠️  Port changed from ${oldPort} to ${newPort}`,
-              colors.yellow,
-            ),
+              colors.yellow
+            )
           );
           console.log(colorize('🛑 Server is closing...', colors.yellow));
           stopServer(true);
           console.log(
             colorize(
               'ℹ️  Restart the server to continue with the new port.\n',
-              colors.cyan,
-            ),
+              colors.cyan
+            )
           );
           setTimeout(() => {
             process.exit(0);
@@ -167,8 +161,8 @@ program
       console.error(
         colorize(
           `❌ Error starting server: ${error instanceof Error ? error.message : String(error)}`,
-          colors.red,
-        ),
+          colors.red
+        )
       );
       process.exit(1);
     }

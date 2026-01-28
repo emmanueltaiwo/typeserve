@@ -1,7 +1,7 @@
 import { Queue, Worker, Job } from 'bullmq';
-import { RedisService } from './redis.service';
-import { BULLMQ_QUEUE_NAME } from '../constants';
-import { cleanupServerCache } from '../handlers/subdomain.handler';
+import { RedisService } from './redis.service.js';
+import { BULLMQ_QUEUE_NAME } from '../constants.js';
+import { cleanupServerCache } from '../handlers/subdomain.handler.js';
 
 export class BullMQService {
   private queue: Queue;
