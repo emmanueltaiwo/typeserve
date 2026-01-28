@@ -5,15 +5,8 @@ import { writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 
-/**
- * Validation service for TypeScript types and routes
- */
 export class ValidationService {
-  /**
-   * Validate Express path pattern
-   */
   static validateExpressPath(path: string): { valid: boolean; error?: string } {
-    // Must start with /
     if (!path.startsWith('/')) {
       return {
         valid: false,
@@ -21,9 +14,6 @@ export class ValidationService {
       };
     }
 
-    // Check for invalid characters
-    // Express paths can contain: letters, numbers, /, -, _, :, *, (, ), ?, +, ., [, ]
-    // But we'll be more restrictive for safety
     const invalidChars = /[^a-zA-Z0-9\/\-_:\*\(\)\?\+\.\[\]]/;
     if (invalidChars.test(path)) {
       return {
@@ -40,9 +30,6 @@ export class ValidationService {
       };
     }
 
-    // Check for invalid parameter syntax
-    // Valid: /:id, /:userId, /users/:id/posts
-    // Invalid: /: (no name), /::id (double colon)
     if (path.includes('::')) {
       return {
         valid: false,
@@ -66,9 +53,6 @@ export class ValidationService {
     return { valid: true };
   }
 
-  /**
-   * Validate responseType format
-   */
   static validateResponseType(responseType: string): {
     valid: boolean;
     error?: string;
@@ -93,7 +77,6 @@ export class ValidationService {
       };
     }
 
-    // Type name should be valid identifier (letters, numbers, underscore, starting with letter or underscore)
     const validIdentifier = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     if (!validIdentifier.test(baseType)) {
       return {
@@ -119,7 +102,6 @@ export class ValidationService {
       };
     }
 
-    // Create temporary directory for validation
     const tempDir = join(tmpdir(), 'typeserve-validation', randomUUID());
     const typesFile = join(tempDir, 'types.ts');
 
@@ -138,14 +120,13 @@ export class ValidationService {
         tsConfigFilePath: undefined,
         skipAddingFilesFromTsConfig: true,
         skipFileDependencyResolution: true,
-        skipLoadingLibFiles: true, // Skip loading lib.d.ts files to avoid JSX namespace errors
+        skipLoadingLibFiles: true,
         compilerOptions: {
-          // Minimal compiler options - only what we need for type checking
-          target: 99, // ESNext
-          module: 99, // ESNext
-          lib: [], // No lib files to avoid JSX namespace errors
+          target: 99,
+          module: 99,
+          lib: [],
           skipLibCheck: true,
-          noLib: true, // Don't include default library files
+          noLib: true,
         },
       });
 
@@ -163,7 +144,6 @@ export class ValidationService {
         };
       }
 
-      // Block function declarations (not type definitions)
       const functionPattern =
         /(?:^|\n)\s*(?:function\s+\w+|const\s+\w+\s*=\s*(?:\([^)]*\)\s*=>|async\s*\(|function\s*\())/m;
       if (functionPattern.test(sourceText)) {
@@ -174,7 +154,6 @@ export class ValidationService {
         };
       }
 
-      // Block class declarations (not type definitions)
       if (sourceText.match(/(?:^|\n)\s*class\s+\w+/m)) {
         return {
           valid: false,
@@ -189,7 +168,6 @@ export class ValidationService {
 
       const userFileErrors = diagnostics
         .filter((d) => {
-          // Only include actual errors (not warnings)
           if (d.getCategory() !== 1) {
             return false;
           }
@@ -201,7 +179,6 @@ export class ValidationService {
 
           const filePath = file.getFilePath().replace(/\\/g, '/');
 
-          // Only include errors from the user's types file (exact match)
           if (filePath !== normalizedTypesFile) {
             return false;
           }
@@ -229,7 +206,6 @@ export class ValidationService {
         definedTypes.add(intf.getName());
       });
 
-      // Get type aliases
       sourceFile.getTypeAliases().forEach((typeAlias) => {
         definedTypes.add(typeAlias.getName());
       });
@@ -247,7 +223,6 @@ export class ValidationService {
         };
       }
 
-      // Check if all route response types exist
       const missingTypes: string[] = [];
 
       for (const route of routes) {
@@ -292,9 +267,6 @@ export class ValidationService {
     }
   }
 
-  /**
-   * Validate all aspects of a server creation request
-   */
   static async validateServerRequest(
     request: CreateServerRequest
   ): Promise<{ valid: boolean; error?: string }> {
@@ -329,12 +301,10 @@ export class ValidationService {
         };
       }
 
-      // TypeScript now knows route is defined
       const routeMethod = route.method;
       const routePath = route.path;
       const routeResponseType = route.responseType;
 
-      // Validate path
       const pathValidation = this.validateExpressPath(routePath);
       if (!pathValidation.valid) {
         return {
@@ -353,7 +323,6 @@ export class ValidationService {
       }
     }
 
-    // Validate types code and check if all referenced types exist
     const typesValidation = await this.validateTypesCode(
       request.types,
       request.routes

@@ -37,11 +37,9 @@ export function createApp(
     next();
   });
 
-  // Security: Body size limits to prevent DoS
-  app.use(express.json({ limit: '1mb' })); // Max 1MB JSON payload
+  app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-  // Request timeout middleware (30 seconds)
   app.use((req: Request, res: Response, next: NextFunction) => {
     const timeout = setTimeout(() => {
       if (!res.headersSent) {
@@ -50,13 +48,11 @@ export function createApp(
           message: 'Request timeout',
         });
       }
-    }, 30000); // 30 seconds
+    }, 30000);
 
     res.on('finish', () => clearTimeout(timeout));
     next();
   });
-
-  // Request ID and logging middleware
   app.use((req: Request, res: Response, next: NextFunction) => {
     const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     (req as any).requestId = requestId;
@@ -73,12 +69,10 @@ export function createApp(
     next();
   });
 
-  // Health check endpoint (for Railway/load balancers)
   app.get('/health', async (req: Request, res: Response) => {
     try {
-      // Quick health check - verify Redis connection if available
       if (redisService) {
-        await redisService.getActiveServerCount(); // Test Redis connection
+        await redisService.getActiveServerCount();
       }
 
       res.json({
@@ -109,12 +103,10 @@ export function createApp(
     });
   });
 
-  // Error handler
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     const requestId = (req as any).requestId || 'unknown';
     console.error(`[App] [${requestId}] Unhandled error:`, err);
 
-    // Don't leak internal error details in production
     const isDevelopment = process.env.NODE_ENV !== 'production';
     const message = isDevelopment
       ? err.message || 'Internal server error'

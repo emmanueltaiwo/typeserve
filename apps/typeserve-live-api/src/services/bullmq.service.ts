@@ -3,9 +3,6 @@ import { RedisService } from './redis.service';
 import { BULLMQ_QUEUE_NAME } from '../constants';
 import { cleanupServerCache } from '../handlers/subdomain.handler';
 
-/**
- * BullMQ service for handling expiration jobs
- */
 export class BullMQService {
   private queue: Queue;
   private worker: Worker;
@@ -34,23 +31,22 @@ export class BullMQService {
       {
         connection,
         limiter: {
-          max: 10, // Process max 10 jobs per interval
-          duration: 1000, // Per second
+          max: 10,
+          duration: 1000,
         },
-        concurrency: 5, // Process up to 5 jobs concurrently
+        concurrency: 5,
         removeOnComplete: {
-          age: 3600, // Keep completed jobs for 1 hour
-          count: 100, // Keep last 100 completed jobs
+          age: 3600,
+          count: 100,
         },
         removeOnFail: {
-          age: 24 * 3600, // Keep failed jobs for 24 hours
+          age: 24 * 3600,
         },
       }
     );
 
     this.redisService = redisService;
 
-    // Handle worker events
     this.worker.on('completed', (job) => {
       console.log(
         `[BullMQ] Cleanup job completed for server: ${job.data.serverName}`
@@ -75,16 +71,12 @@ export class BullMQService {
     });
   }
 
-  /**
-   * Schedule a cleanup job for a server
-   */
   async scheduleCleanup(serverName: string, expiresAt: string): Promise<void> {
     const expiresAtTime = new Date(expiresAt).getTime();
     const now = Date.now();
     const delay = expiresAtTime - now;
 
     if (delay <= 0) {
-      // Already expired, cleanup immediately
       await this.handleExpiration(serverName);
       return;
     }
@@ -94,7 +86,7 @@ export class BullMQService {
       { serverName },
       {
         delay,
-        jobId: `cleanup-${serverName}`, // Prevent duplicate jobs
+        jobId: `cleanup-${serverName}`,
       }
     );
 
@@ -112,10 +104,6 @@ export class BullMQService {
     }
   }
 
-  /**
-   * Handle server expiration
-   * Idempotent - safe to call multiple times
-   */
   private async handleExpiration(serverName: string): Promise<void> {
     console.log(`[BullMQ] Handling expiration for server: ${serverName}`);
 
@@ -148,18 +136,12 @@ export class BullMQService {
       console.log(`[BullMQ] Successfully cleaned up server: ${serverName}`);
     } catch (error) {
       console.error(`[BullMQ] Error cleaning up server ${serverName}:`, error);
-      // Don't throw - let BullMQ handle retries
-      // But log for monitoring
       throw error;
     }
   }
 
-  /**
-   * Close queue and worker gracefully
-   */
   async close(): Promise<void> {
     try {
-      // Wait for active jobs to complete (with timeout)
       await Promise.race([
         this.worker.close(),
         new Promise((_, reject) =>

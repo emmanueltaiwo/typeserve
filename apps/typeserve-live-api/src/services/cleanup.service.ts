@@ -1,10 +1,6 @@
 import { RedisService } from './redis.service';
 import { cleanupServerCache } from '../handlers/subdomain.handler';
 
-/**
- * Periodic cleanup service for expired servers
- * Runs every 5 minutes to catch any servers that might have been missed
- */
 export class CleanupService {
   private intervalId: NodeJS.Timeout | null = null;
   private isRunning = false;
@@ -25,12 +21,10 @@ export class CleanupService {
       `[CleanupService] Starting periodic cleanup (every ${intervalMs / 1000}s)`
     );
 
-    // Run immediately on start
     this.cleanupExpiredServers().catch((error) => {
       console.error('[CleanupService] Error in initial cleanup:', error);
     });
 
-    // Then run periodically
     this.intervalId = setInterval(() => {
       this.cleanupExpiredServers().catch((error) => {
         console.error('[CleanupService] Error in periodic cleanup:', error);
@@ -50,9 +44,6 @@ export class CleanupService {
     console.log('[CleanupService] Stopped periodic cleanup');
   }
 
-  /**
-   * Clean up expired servers
-   */
   private async cleanupExpiredServers(): Promise<void> {
     try {
       const serverNames = await this.redisService.getActiveServerNames();

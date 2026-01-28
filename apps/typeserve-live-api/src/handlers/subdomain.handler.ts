@@ -6,19 +6,14 @@ import { tmpdir } from 'os';
 import { writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
 
-// Cache for parsed types per server (module-level for cleanup access)
-// Limited to prevent memory leaks - max 100 servers cached
 const parsedTypesCache = new Map<string, Map<string, ParsedType>>();
 const MAX_CACHE_SIZE = 100;
 
-/**
- * Convert Express-style path pattern to regex (e.g. /route/:id matches /route/123)
- */
 function pathPatternToRegex(pathPattern: string): RegExp {
   const segments = pathPattern.split('/').filter((s) => s.length > 0);
   const regexParts = segments.map((seg) => {
     if (seg.startsWith(':')) {
-      return '[^/]+'; // param: one or more non-slash chars
+      return '[^/]+';
     }
     return seg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   });
@@ -34,9 +29,6 @@ function normalizePath(path: string): string {
   return trimmed === '' ? '/' : trimmed;
 }
 
-/**
- * Check if request path matches a route pattern (supports /path/:id etc)
- */
 function pathMatches(pattern: string, path: string): boolean {
   const normalized = normalizePath(path);
   if (pattern === normalized) return true;
@@ -59,25 +51,19 @@ function cleanupOldCacheEntries(): void {
         try {
           rmSync(tempDir, { recursive: true, force: true });
         } catch (error) {
-          // Ignore cleanup errors
+          // Ignored
         }
       }
     }
   }
 }
 
-/**
- * Handler for subdomain-based requests
- * Handles requests like: my-api.typeserve.live/users
- */
 export function createSubdomainHandler(serverService: ServerService) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Extract subdomain from hostname
       const hostname = req.hostname || req.get('host') || '';
       const subdomain = hostname.split('.')[0];
 
-      // Skip if this is the main API domain (not a subdomain)
       if (
         !hostname.includes('.typeserve.live') ||
         !subdomain ||
@@ -100,7 +86,6 @@ export function createSubdomainHandler(serverService: ServerService) {
         });
       }
 
-      // Check if server is expired
       const expiresAt = new Date(serverData.expiresAt);
       const now = new Date();
       if (now >= expiresAt) {
@@ -128,7 +113,6 @@ export function createSubdomainHandler(serverService: ServerService) {
         });
       }
 
-      // Generate response using Typeserve core
       const mockData = await generateMockData(
         serverData,
         route,
@@ -157,7 +141,6 @@ async function generateMockData(
   route: RouteConfig,
   serverName: string
 ): Promise<any> {
-  // Create a temporary directory for this server's types
   const tempDir = join(tmpdir(), 'typeserve-live', serverName);
   const typesFile = join(tempDir, 'types.ts');
 
@@ -202,13 +185,8 @@ async function generateMockData(
   }
 }
 
-/**
- * Clean up parsed types cache for a server
- */
 export function cleanupServerCache(serverName: string): void {
   parsedTypesCache.delete(serverName);
-
-  // Clean up temp directory
   const tempDir = join(tmpdir(), 'typeserve-live', serverName);
   if (existsSync(tempDir)) {
     try {

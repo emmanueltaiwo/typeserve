@@ -13,22 +13,15 @@ import {
   MAX_EXPIRATION_SECONDS,
 } from '../constants';
 
-/**
- * Server management service
- */
 export class ServerService {
   constructor(
     private redisService: RedisService,
     private bullMQService: BullMQService
   ) {}
 
-  /**
-   * Create a new mock server
-   */
   async createServer(
     request: CreateServerRequest
   ): Promise<ServerData | CapacityErrorResponse> {
-    // Validate expiration
     const expiresAt = new Date(request.expiresAt);
     const now = new Date();
     const expirationSeconds = Math.floor(
@@ -47,21 +40,15 @@ export class ServerService {
       );
     }
 
-    // Atomic check-and-create pattern to prevent race conditions
-    // Try to add to active servers set first (atomic operation)
     const added = await this.redisService.addActiveServer(request.name);
     if (!added) {
-      // Server name already exists - rollback and return error
       throw new Error(
         `Server name "${request.name}" is already taken. Please choose a different name.`
       );
     }
 
-    // Check capacity AFTER atomic add (to prevent race condition)
-    // If over capacity, we'll clean up and return error
     const activeCount = await this.redisService.getActiveServerCount();
     if (activeCount > MAX_ACTIVE_SERVERS) {
-      // Rollback: remove from active servers
       await this.redisService.removeActiveServer(request.name);
       const nextAvailable = await this.getNextAvailableSlot();
       return {
@@ -70,15 +57,13 @@ export class ServerService {
       };
     }
 
-    // Convert routes to RouteConfig format
     const routes: RouteConfig[] = request.routes.map((route) => ({
       method: route.method,
       path: route.path,
       type: route.responseType,
-      count: route.responseType.endsWith('[]') ? 3 : undefined, // Default array count
+      count: route.responseType.endsWith('[]') ? 3 : undefined,
     }));
 
-    // Create server data
     const subdomain = `${request.name}.typeserve.live`;
     const serverData: ServerData = {
       name: request.name,
@@ -89,8 +74,6 @@ export class ServerService {
       createdAt: now.toISOString(),
     };
 
-    // Store in Redis (server already added to active set atomically above)
-    // Use try-catch to rollback on failure
     try {
       await Promise.all([
         this.redisService.setServerData(request.name, serverData),
@@ -99,7 +82,6 @@ export class ServerService {
         this.redisService.setTypes(request.name, request.types),
       ]);
 
-      // Schedule cleanup job (don't fail if scheduling fails - server is already created)
       try {
         await this.bullMQService.scheduleCleanup(
           request.name,
@@ -110,10 +92,8 @@ export class ServerService {
           `[ServerService] Failed to schedule cleanup for ${request.name}:`,
           scheduleError
         );
-        // Continue - server is created, cleanup can be handled manually if needed
       }
     } catch (error) {
-      // Rollback: remove from active servers if storage fails
       try {
         await this.redisService.removeActiveServer(request.name);
       } catch (rollbackError) {
@@ -129,7 +109,37 @@ export class ServerService {
       `[ServerService] Created server: ${request.name}, expires at: ${request.expiresAt}`
     );
 
+    // Pre-warm subdomain to cache Railway routing (non-blocking)
+    this.warmupSubdomain(subdomain).catch((error) => {
+      console.error(
+        `[ServerService] Failed to warmup subdomain ${subdomain}:`,
+        error
+      );
+      // Don't fail server creation if warmup fails
+    });
+
     return serverData;
+  }
+
+  private async warmupSubdomain(subdomain: string): Promise<void> {
+    const warmupUrl = `https://${subdomain}/__warmup`;
+    try {
+      const response = await fetch(warmupUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Typeserve-Live-Warmup/1.0',
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+      console.log(
+        `[ServerService] Warmup request to ${subdomain} completed with status ${response.status}`
+      );
+    } catch (error) {
+      console.warn(
+        `[ServerService] Warmup request to ${subdomain} failed:`,
+        error instanceof Error ? error.message : String(error)
+      );
+    }
   }
 
   /**
@@ -166,9 +176,6 @@ export class ServerService {
     });
   }
 
-  /**
-   * Get server by name
-   */
   async getServer(name: string): Promise<ServerData | null> {
     return await this.redisService.getServerData(name);
   }
@@ -186,16 +193,12 @@ export class ServerService {
     return await this.getServer(name);
   }
 
-  /**
-   * Calculate when the next server slot becomes available
-   */
   private async getNextAvailableSlot(): Promise<number> {
     const servers = await this.redisService.getServersByExpiration();
     if (servers.length === 0) {
       return 0;
     }
 
-    // Get the earliest expiration (guaranteed to exist after length check)
     const earliestExpiration = servers[0];
     if (!earliestExpiration) {
       return 0;
@@ -204,12 +207,9 @@ export class ServerService {
     const expiresAt = earliestExpiration.expiresAt;
     const nextAvailable = Math.max(0, expiresAt - now);
 
-    return Math.floor(nextAvailable / 1000); // Convert to seconds
+    return Math.floor(nextAvailable / 1000);
   }
 
-  /**
-   * Cleanup a server (manual cleanup if needed)
-   */
   async cleanupServer(name: string): Promise<void> {
     await this.bullMQService.cancelCleanup(name);
     await this.redisService.cleanupServer(name);

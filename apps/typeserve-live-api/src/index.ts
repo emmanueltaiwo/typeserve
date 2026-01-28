@@ -16,8 +16,6 @@ async function main() {
   const cleanupService = new CleanupService(redisService);
 
   const app = createApp(serverService, redisService);
-
-  // Start periodic cleanup service (runs every 5 minutes)
   cleanupService.start();
 
   const server = app.listen(port, () => {
@@ -36,7 +34,6 @@ async function main() {
     server.close(async () => {
       console.log('[Typeserve Live API] HTTP server closed');
 
-      // Stop periodic cleanup
       if (cleanupService) {
         cleanupService.stop();
       }
@@ -83,20 +80,18 @@ async function main() {
     );
   });
 
-  // Handle memory warnings
   if (process.memoryUsage) {
     setInterval(() => {
       const usage = process.memoryUsage();
       const heapUsedMB = Math.round(usage.heapUsed / 1024 / 1024);
       const heapTotalMB = Math.round(usage.heapTotal / 1024 / 1024);
 
-      // Warn if heap usage exceeds 500MB
       if (heapUsedMB > 500) {
         console.warn(
           `[Typeserve Live API] High memory usage: ${heapUsedMB}MB / ${heapTotalMB}MB`
         );
       }
-    }, 60000); // Check every minute
+    }, 60000);
   }
 }
 

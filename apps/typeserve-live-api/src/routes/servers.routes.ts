@@ -9,9 +9,6 @@ import {
   DuplicateSubdomainErrorResponse,
 } from '../types';
 
-/**
- * Type guard to check if result is a capacity error
- */
 function isCapacityError(
   result: ServerData | CapacityErrorResponse
 ): result is CapacityErrorResponse {
@@ -24,9 +21,6 @@ function isCapacityError(
 export function createServersRouter(serverService: ServerService): Router {
   const router = Router();
 
-  /**
-   * POST /servers - Create a new mock server
-   */
   router.post('/', async (req: Request, res: Response) => {
     try {
       const body = req.body as CreateServerRequest;
@@ -39,7 +33,6 @@ export function createServersRouter(serverService: ServerService): Router {
         } as ValidationErrorResponse);
       }
 
-      // Validate name format (alphanumeric and hyphens only)
       if (!/^[a-z0-9-]+$/.test(body.name)) {
         return res.status(400).json({
           error: 'validation_error',
@@ -57,7 +50,6 @@ export function createServersRouter(serverService: ServerService): Router {
         } as ValidationErrorResponse);
       }
 
-      // Validate routes
       if (!Array.isArray(body.routes) || body.routes.length === 0) {
         return res.status(400).json({
           error: 'validation_error',
@@ -97,10 +89,8 @@ export function createServersRouter(serverService: ServerService): Router {
         } as ValidationErrorResponse);
       }
 
-      // Create server
       const result = await serverService.createServer(body);
 
-      // Check if capacity was reached
       if (isCapacityError(result)) {
         return res.status(503).json(result);
       }
@@ -120,7 +110,6 @@ export function createServersRouter(serverService: ServerService): Router {
       const message =
         error instanceof Error ? error.message : 'Internal server error';
 
-      // Check if it's a duplicate subdomain error
       if (error instanceof Error && message.includes('already taken')) {
         const requestBody = req.body as CreateServerRequest;
         return res.status(409).json({
@@ -145,9 +134,6 @@ export function createServersRouter(serverService: ServerService): Router {
     }
   });
 
-  /**
-   * GET /servers - List all active servers
-   */
   router.get('/', async (req: Request, res: Response) => {
     try {
       const servers = await serverService.getActiveServers();

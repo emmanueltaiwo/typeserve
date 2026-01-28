@@ -10,7 +10,7 @@ export interface CreateServerRequest {
 export interface CreateRouteRequest {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   path: string;
-  responseType: string; // e.g., "User[]" or "User"
+  responseType: string;
 }
 
 export interface ServerData {
