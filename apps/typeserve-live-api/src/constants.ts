@@ -13,3 +13,34 @@ export const REDIS_KEYS = {
 } as const;
 
 export const BULLMQ_QUEUE_NAME = 'typeserve-live-expiration';
+
+export const RESERVED_SUBDOMAIN_NAMES = [
+  'api',
+  'test',
+  'staging',
+  'dev',
+  'development',
+  'www',
+  'admin',
+  'app',
+  'apps',
+  'mail',
+  'email',
+  'ftp',
+  'localhost',
+  'production',
+  'prod',
+  'demo',
+  'docs',
+  'documentation',
+  'blog',
+  'support',
+  'help',
+  'status',
+  'monitor',
+  'monitoring',
+  'metrics',
+  'health',
+  'ping',
+  'pong',
+] as const;

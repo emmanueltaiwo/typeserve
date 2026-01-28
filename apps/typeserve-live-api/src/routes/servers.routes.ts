@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { ServerService } from '../services/server.service';
 import { ValidationService } from '../services/validation.service';
 import { rateLimiters } from '../services/rate-limit.service';
+import { RESERVED_SUBDOMAIN_NAMES } from '../constants';
 import {
   CreateServerRequest,
   ValidationErrorResponse,
@@ -42,6 +43,19 @@ export function createServersRouter(serverService: ServerService): Router {
             error: 'validation_error',
             message:
               'Server name must contain only lowercase letters, numbers, and hyphens',
+          } as ValidationErrorResponse);
+        }
+
+        // Check for reserved subdomain names
+        const normalizedName = body.name.toLowerCase();
+        if (
+          (RESERVED_SUBDOMAIN_NAMES as readonly string[]).includes(
+            normalizedName
+          )
+        ) {
+          return res.status(400).json({
+            error: 'validation_error',
+            message: `Server name "${body.name}" is reserved and cannot be used. Please choose a different name.`,
           } as ValidationErrorResponse);
         }
 
