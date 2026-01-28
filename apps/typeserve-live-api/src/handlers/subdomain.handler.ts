@@ -5,6 +5,7 @@ import { RouteConfig } from '@typeserve/core';
 import { tmpdir } from 'os';
 import { writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
+import { checkRateLimit } from '../services/rate-limit.service';
 
 const parsedTypesCache = new Map<string, Map<string, ParsedType>>();
 const MAX_CACHE_SIZE = 100;
@@ -95,13 +96,47 @@ export function createSubdomainHandler(serverService: ServerService) {
         });
       }
 
-      // Handle warmup endpoint
+      // Handle warmup endpoint (no rate limiting)
       if (req.path === '/__warmup') {
         return res.json({
           status: 'ok',
           message: 'Server is ready',
           subdomain: validSubdomain,
         });
+      }
+
+      // Rate limit subdomain API requests (1000 per minute per subdomain)
+      const rateLimitResult = await checkRateLimit(
+        `subdomain:${validSubdomain}`,
+        1000,
+        60000
+      );
+
+      if (!rateLimitResult.allowed) {
+        res.setHeader('X-RateLimit-Limit', '1000');
+        res.setHeader('X-RateLimit-Remaining', '0');
+        if (rateLimitResult.resetAt) {
+          res.setHeader(
+            'X-RateLimit-Reset',
+            rateLimitResult.resetAt.toString()
+          );
+        }
+        return res.status(429).json({
+          error: 'rate_limit_exceeded',
+          message: `Rate limit exceeded for ${validSubdomain}. Maximum 1000 requests per minute.`,
+          retryAfter: rateLimitResult.resetAt
+            ? Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)
+            : undefined,
+        });
+      }
+
+      res.setHeader('X-RateLimit-Limit', '1000');
+      res.setHeader(
+        'X-RateLimit-Remaining',
+        rateLimitResult.remaining.toString()
+      );
+      if (rateLimitResult.resetAt) {
+        res.setHeader('X-RateLimit-Reset', rateLimitResult.resetAt.toString());
       }
 
       // Normalize path so /route/123/ matches /route/:id
