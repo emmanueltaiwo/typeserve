@@ -1,6 +1,6 @@
 {
   "name": "@typeserve/core",
-  "version": "1.0.2",
+  "version": "2.0.3",
   "description": "Core library for TypeServe - TypeScript mock API generator",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
