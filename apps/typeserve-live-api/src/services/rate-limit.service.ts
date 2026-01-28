@@ -1,16 +1,25 @@
-import { createClient } from 'limitly-sdk';
 import { Request, Response, NextFunction } from 'express';
+import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
+import { createClient } from 'redis';
 
-const limitlyRedisUrl =
-  process.env.LIMITLY_REDIS_URL ||
+const rateLimitRedisUrl =
+  process.env.RATE_LIMIT_REDIS_URL ||
   process.env.REDIS_URL ||
   'redis://localhost:6379';
 
-const limitlyClient = createClient({
-  redisUrl: limitlyRedisUrl,
-  serviceId: 'typeserve-live-api',
-  algorithm: 'sliding-window',
-});
+let redisClient: ReturnType<typeof createClient> | null = null;
+
+async function getRedisClient() {
+  if (!redisClient) {
+    redisClient = createClient({ url: rateLimitRedisUrl });
+    redisClient.on('error', (err) =>
+      console.error('[RateLimitService] Redis client error:', err)
+    );
+    await redisClient.connect();
+  }
+  return redisClient;
+}
 
 function getClientIdentifier(req: Request): string {
   const forwarded = req.headers['x-forwarded-for'];
@@ -30,32 +39,36 @@ function getClientIdentifier(req: Request): string {
   return 'unknown';
 }
 
-export interface RateLimitResult {
-  allowed: boolean;
-  remaining: number;
-  resetAt?: number;
-}
-
-export async function checkRateLimit(
-  identifier: string,
+export async function checkSubdomainRateLimit(
+  subdomain: string,
   limit: number,
-  windowSizeMs: number
-): Promise<RateLimitResult> {
+  windowMs: number
+): Promise<{ allowed: boolean; remaining: number; resetAt?: number }> {
   try {
-    const result = await limitlyClient.checkRateLimit({
-      identifier,
-      limit,
-      windowSize: windowSizeMs,
-      algorithm: 'sliding-window',
-    });
+    const client = await getRedisClient();
+    const key = `rate_limit:subdomain:${subdomain}`;
+    const now = Date.now();
+    const windowStart = Math.floor(now / windowMs) * windowMs;
+    const windowKey = `${key}:${windowStart}`;
+
+    const count = await client.incr(windowKey);
+    if (count === 1) {
+      await client.expire(windowKey, Math.ceil(windowMs / 1000));
+    }
+
+    const remaining = Math.max(0, limit - count);
+    const resetAt = windowStart + windowMs;
 
     return {
-      allowed: result.allowed,
-      remaining: result.remaining ?? limit,
-      resetAt: (result as any).resetAt ?? (result as any).reset,
+      allowed: count <= limit,
+      remaining,
+      resetAt,
     };
   } catch (error) {
-    console.error('[RateLimitService] Error checking rate limit:', error);
+    console.error(
+      '[RateLimitService] Error checking subdomain rate limit:',
+      error
+    );
     return {
       allowed: true,
       remaining: limit,
@@ -65,42 +78,34 @@ export async function checkRateLimit(
 
 export function createRateLimitMiddleware(
   limit: number,
-  windowSizeMs: number,
-  errorMessage?: string
-) {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const identifier = getClientIdentifier(req);
-    const result = await checkRateLimit(identifier, limit, windowSizeMs);
-
-    if (!result.allowed) {
+  windowMs: number,
+  errorMessage?: string,
+  keyGenerator?: (req: Request) => string
+): RateLimitRequestHandler {
+  return rateLimit({
+    windowMs,
+    max: limit,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: keyGenerator || getClientIdentifier,
+    store: new RedisStore({
+      sendCommand: async (...args: string[]) => {
+        const client = await getRedisClient();
+        return client.sendCommand(args);
+      },
+    }),
+    handler: (req: Request, res: Response) => {
       const requestId = (req as any).requestId || 'unknown';
       console.log(
-        `[RateLimit] [${requestId}] Rate limit exceeded for ${identifier} on ${req.path}`
+        `[RateLimit] [${requestId}] Rate limit exceeded for ${getClientIdentifier(req)} on ${req.path}`
       );
 
-      res.setHeader('X-RateLimit-Limit', limit.toString());
-      res.setHeader('X-RateLimit-Remaining', '0');
-      if (result.resetAt) {
-        res.setHeader('X-RateLimit-Reset', result.resetAt.toString());
-      }
-
-      return res.status(429).json({
+      res.status(429).json({
         error: 'rate_limit_exceeded',
         message: errorMessage || 'Too many requests. Please try again later.',
-        retryAfter: result.resetAt
-          ? Math.ceil((result.resetAt - Date.now()) / 1000)
-          : undefined,
       });
-    }
-
-    res.setHeader('X-RateLimit-Limit', limit.toString());
-    res.setHeader('X-RateLimit-Remaining', result.remaining.toString());
-    if (result.resetAt) {
-      res.setHeader('X-RateLimit-Reset', result.resetAt.toString());
-    }
-
-    next();
-  };
+    },
+  });
 }
 
 export const rateLimiters = {
@@ -114,10 +119,4 @@ export const rateLimiters = {
     60000,
     'Too many requests. Please try again later.'
   ),
-  subdomainAPI: (subdomain: string) =>
-    createRateLimitMiddleware(
-      1000,
-      60000,
-      `Rate limit exceeded for ${subdomain}. Maximum 1000 requests per minute.`
-    ),
 };

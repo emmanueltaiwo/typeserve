@@ -20,7 +20,7 @@ Typeserve Live allows users to create temporary mock APIs based on TypeScript ty
 - ✅ Redis-backed storage
 - ✅ Docker support for Railway deployment
 - ✅ Strong validation of routes, types, and paths
-- ✅ Per-IP and per-subdomain rate limiting (Limitly)
+- ✅ Per-IP and per-subdomain rate limiting (express-rate-limit)
 - ✅ Subdomain warmup endpoint for Railway routing stability
 
 ## Tech Stack
@@ -231,7 +231,7 @@ This helps prevent the first real request from hitting a cold route.
 
 ### Rate Limiting
 
-All rate limiting is handled via [Limitly](https://www.npmjs.com/package/limitly-sdk) backed by Redis:
+All rate limiting is handled via [express-rate-limit](https://www.npmjs.com/package/express-rate-limit) with Redis store:
 
 - **Server creation** (`POST /servers`): max **5 requests per hour per IP**
 - **List servers** (`GET /servers`): max **60 requests per minute per IP**
@@ -249,8 +249,8 @@ NODE_ENV=production
 # Redis Configuration
 REDIS_URL=redis://localhost:6379
 
-# Limitly (Rate Limiting) Redis
-LIMITLY_REDIS_URL=redis://localhost:6379
+# Rate Limiting Redis (optional, falls back to REDIS_URL if not set)
+RATE_LIMIT_REDIS_URL=redis://localhost:6379
 ```
 
 ## Development
@@ -278,7 +278,7 @@ docker build -t typeserve-live-api .
 # Run container
 docker run -p 7005:7005 \
   -e REDIS_URL=redis://your-redis-host:6379 \
-  -e LIMITLY_REDIS_URL=redis://your-limitly-redis-host:6379 \
+  -e RATE_LIMIT_REDIS_URL=redis://your-rate-limit-redis-host:6379 \
   typeserve-live-api
 ```
 
@@ -287,7 +287,7 @@ docker run -p 7005:7005 \
 The Dockerfile is configured for Railway deployment. Set the following environment variables in Railway:
 
 - `REDIS_URL` - Your Redis connection string
-- `LIMITLY_REDIS_URL` - Redis connection string for Limitly (can be same as `REDIS_URL`)
+- `RATE_LIMIT_REDIS_URL` - Redis connection string for rate limiting (optional, falls back to `REDIS_URL` if not set)
 - `PORT` - Server port (Railway sets this automatically)
 - `NODE_ENV=production`
 
@@ -303,7 +303,7 @@ src/
 │   ├── server.service.ts # Server management & warmup logic
 │   ├── validation.service.ts # Validation of routes, paths, and types
 │   ├── cleanup.service.ts # Periodic safety-net cleanup
-│   └── rate-limit.service.ts # Limitly-based rate limiting
+│   └── rate-limit.service.ts # express-rate-limit based rate limiting
 ├── routes/
 │   └── servers.routes.ts # API route handlers
 ├── handlers/

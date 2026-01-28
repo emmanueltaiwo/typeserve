@@ -5,7 +5,7 @@ import { RouteConfig } from '@typeserve/core';
 import { tmpdir } from 'os';
 import { writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
-import { checkRateLimit } from '../services/rate-limit.service';
+import { checkSubdomainRateLimit } from '../services/rate-limit.service';
 
 const parsedTypesCache = new Map<string, Map<string, ParsedType>>();
 const MAX_CACHE_SIZE = 100;
@@ -106,8 +106,8 @@ export function createSubdomainHandler(serverService: ServerService) {
       }
 
       // Rate limit subdomain API requests (1000 per minute per subdomain)
-      const rateLimitResult = await checkRateLimit(
-        `subdomain:${validSubdomain}`,
+      const rateLimitResult = await checkSubdomainRateLimit(
+        validSubdomain,
         1000,
         60000
       );
