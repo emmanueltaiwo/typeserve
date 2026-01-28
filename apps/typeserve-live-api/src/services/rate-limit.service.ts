@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
-import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
+import {
+  rateLimit,
+  RateLimitRequestHandler,
+  ipKeyGenerator,
+} from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import { createClient } from 'redis';
 
@@ -22,15 +26,22 @@ async function getRedisClient() {
 }
 
 function getClientIp(req: Request): string {
+  let ip: string;
   const forwarded = req.headers['x-forwarded-for'];
   if (typeof forwarded === 'string') {
     const parts = forwarded.split(',');
     const firstIp = parts[0]?.trim();
     if (firstIp) {
-      return firstIp;
+      ip = firstIp;
+    } else {
+      ip = req.ip || req.socket?.remoteAddress || 'unknown';
     }
+  } else {
+    ip = req.ip || req.socket?.remoteAddress || 'unknown';
   }
-  return req.ip || req.socket?.remoteAddress || 'unknown';
+
+  // Use ipKeyGenerator to properly handle IPv6 addresses
+  return ipKeyGenerator(ip);
 }
 
 export async function checkSubdomainRateLimit(
