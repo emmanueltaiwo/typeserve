@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { rateLimit, RateLimitRequestHandler } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import { createClient } from 'redis';
@@ -21,22 +21,16 @@ async function getRedisClient() {
   return redisClient;
 }
 
-function getClientIdentifier(req: Request): string {
+function getClientIp(req: Request): string {
   const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length > 0) {
+  if (typeof forwarded === 'string') {
     const parts = forwarded.split(',');
-    const firstIp = parts[0];
+    const firstIp = parts[0]?.trim();
     if (firstIp) {
-      return firstIp.trim();
+      return firstIp;
     }
   }
-  if (req.ip) {
-    return req.ip;
-  }
-  if (req.socket?.remoteAddress) {
-    return req.socket.remoteAddress;
-  }
-  return 'unknown';
+  return req.ip || req.socket?.remoteAddress || 'unknown';
 }
 
 export async function checkSubdomainRateLimit(
@@ -87,7 +81,7 @@ export function createRateLimitMiddleware(
     max: limit,
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: keyGenerator || getClientIdentifier,
+    keyGenerator: keyGenerator || getClientIp,
     store: new RedisStore({
       sendCommand: async (...args: string[]) => {
         const client = await getRedisClient();
@@ -96,8 +90,9 @@ export function createRateLimitMiddleware(
     }),
     handler: (req: Request, res: Response) => {
       const requestId = (req as any).requestId || 'unknown';
+      const identifier = (keyGenerator || getClientIp)(req);
       console.log(
-        `[RateLimit] [${requestId}] Rate limit exceeded for ${getClientIdentifier(req)} on ${req.path}`
+        `[RateLimit] [${requestId}] Rate limit exceeded for ${identifier} on ${req.path}`
       );
 
       res.status(429).json({
