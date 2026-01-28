@@ -95,6 +95,15 @@ export function createSubdomainHandler(serverService: ServerService) {
         });
       }
 
+      // Handle warmup endpoint
+      if (req.path === '/__warmup') {
+        return res.json({
+          status: 'ok',
+          message: 'Server is ready',
+          subdomain: validSubdomain,
+        });
+      }
+
       // Normalize path so /route/123/ matches /route/:id
       const requestPath = normalizePath(req.path);
       // Find matching route (exact path first, then param paths e.g. /route/:id)
